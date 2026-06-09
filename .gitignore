@@ -1,0 +1,6 @@
+.grindraft-cache/
+.grindraft-state.json
+node_modules/
+*.log
+*.zip
+.DS_Store

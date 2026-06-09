@@ -1,0 +1,38 @@
+{
+  "name": "grindraft-skill",
+  "owner": {
+    "name": "Grindraft",
+    "email": ""
+  },
+  "metadata": {
+    "description": "磨稿——把公众号长文写作变成可校准预测循环。16 个独立 skill，从找热点到复盘全流程闭环。",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "grindraft",
+      "description": "公众号长文写作校准闭环：抓热点 → 聊选题 → AI 写初稿 → 去 AI 味 → 设计封面 → 排版 HTML → 盲预测 → 发布登记 → 数据复盘 → 进化 rubric",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/grindraft",
+        "./skills/grindraft-init",
+        "./skills/grindraft-trends",
+        "./skills/grindraft-seed",
+        "./skills/grindraft-write",
+        "./skills/grindraft-humanize",
+        "./skills/grindraft-cover",
+        "./skills/grindraft-format",
+        "./skills/grindraft-predict",
+        "./skills/grindraft-publish",
+        "./skills/grindraft-retro",
+        "./skills/grindraft-persona",
+        "./skills/grindraft-bump",
+        "./skills/grindraft-recommend",
+        "./skills/grindraft-status",
+        "./skills/grindraft-score-blind",
+        "./skills/grindraft-polish"
+      ]
+    }
+  ]
+}
