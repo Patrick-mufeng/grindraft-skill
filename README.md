@@ -1,69 +1,109 @@
 # 磨稿 / Grindraft
 
-> 把公众号长文写作变成可校准预测循环——让每一篇都算数。
+> 公众号写作的全流程 Claude Code 插件——**写稿、去 AI 味、设计封面、一键排版、校准复盘**，16 个 skill 全搞定。
 
 [![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-Plugin-blue)](https://claude.ai)
 
 ---
 
-## 这是什么？
+## 三大核心能力
 
-**磨稿** 是一个 Claude Code 插件，包含 16 个独立 skill，覆盖公众号长文写作全流程：
+### 🎨 公众号封面设计 — `grindraft-cover`
 
-```
-抓热点 → 聊选题 → AI 写初稿 → 去 AI 味 → 设计封面 → 排版 → 盲预测 → 发布 → 复盘 → 进化
-```
+读完文章自动分析情绪 + 领域，从 **40 套模板**里推荐 3 个最合适的，生成预览 HTML 和 PNG。
 
-常规 AI 写作是一次性的。磨稿不一样——**每一篇文章都变成数据，数据反过来让下一篇更好**。
+| 模板系列 | 举例 |
+|----------|------|
+| 科技硬核 | 赛博霓虹、蓝图、全息、终端复古 |
+| 设计美学 | 瑞士极简、包豪斯、孟菲斯、波普 |
+| 质感氛围 | 暗黑奢华、水彩、墨韵、玻璃拟态 |
+| 创意实验 | 蒸汽波、像素艺术、故障艺术、Y2K |
+
+说"设计封面" → AI 自动匹配 → 确认 → 出图。支持改稿循环（换文案/调色/换模板），双击预览 HTML 就能看到效果。
+
+### 📐 一键公众号排版 — `grindraft-format`
+
+Markdown 写完 → 说"排版" → 自动出公众号兼容 HTML。
+
+- 自动设计主题色板 + 排版风格，每次都不一样
+- 支持手机预览（双击 HTML 在模拟器里看效果）
+- 一键复制到公众号后台
+- 内置预览版（带"复制到公众号"按钮）
+- 遵守公众号 CSS 白名单，不踩坑
+
+### 📊 校准闭环 — 越写越准
+
+每篇文章 7 维盲打分 → 发布 → T+3 天复盘对比真实数据 → 评分公式自动进化。
 
 ---
 
 ## 安装
 
-### 方式一：Claude Code 插件市场
-
 ```bash
-claue plugin install github.com/grindraft/grindraft-skill
+claue plugin install github.com/Patrick-mufeng/grindraft-skill
 ```
 
-### 方式二：手动复制
-
-将 `skills/` 目录下的任意 skill 文件夹复制到项目的 `.claude/skills/` 目录：
-
-```bash
-# 安装全部 16 个 skill
-cp -r skills/* ~/your-project/.claude/skills/
-
-# 或只安装需要的
-cp -r skills/grindraft-init ~/your-project/.claude/skills/
-```
+或手动复制需要的 skill 到 `.claude/skills/`。
 
 ---
 
 ## 快速开始
 
-安装后在 Claude Code 中说：
+```
+磨稿初始化          → 建项目骨架
+抓热点              → 拉 AI 圈今日资讯
+找选题              → 聊出一个角度
+写文章              → AI 出初稿
+去 AI 味            → 四层自检
+设计封面            → 40 套模板，自动匹配
+排版                → Markdown → 公众号 HTML，一键
+启动预测            → 7 维盲打分（⚠️ 写完不能改）
+已发布              → 登记 URL
+复盘                → T+3 天数据回收
+状态                → 看板总览
+```
+
+---
+
+## 🎨 封面设计详解
 
 ```
-磨稿初始化
+说"设计封面"
+  ↓
+AI 读文章 → 三维分析（情绪 × 领域 × IP）
+  ↓
+推荐 3 个模板（带色板 + 推荐理由）
+  ↓
+提取封面文案（标题 ≤15字 + 描述 + 标签）
+  ↓
+生成预览 HTML（2.35:1 大图 + 1:1 小图，左右并排）
+  ↓
+可选 PNG 导出（需 Node.js + puppeteer + canvas）
+  ↓
+改稿循环（换文案/换配色/换模板，最多 5 轮）
 ```
 
-跟着引导回答几个问题（粉丝数、发布频率、AI 参与度），脚手架就建好了。
+**40 套模板覆盖 5 种情绪 × 6 个领域**：冷峻/温暖/激昂/轻松/严肃 × 科技/商业/生活/教育/娱乐/人文。每套模板包含色板、字体、布局规则、CSS 代码片段。用户也可以指定具体模板名（比如"用赛博霓虹"）跳过自动匹配。
 
-之后用自然语言触发每个环节：
+## 📐 排版详解
 
 ```
-抓热点          → 拉今日 AI 圈精选资讯，写入选题池
-找选题          → 围绕你的真实经历深挖，收敛到一个角度
-写文章          → AI 按你的大纲出初稿
-去 AI 味        → 四层自检，修复 AI 写作痕迹
-设计封面        → 40 套模板选一个，生成预览 HTML
-排版            → Markdown 一键转公众号 HTML
-启动预测        → 7 维盲打分 + bucket 押注（写完不可改！）
-已发布          → 登记 URL，提醒复盘时间
-复盘            → T+3 天后看数据，对比预测验证/推翻
-状态            → 看板：进度、选题池、待复盘
+说"排版"
+  ↓
+读 Markdown 终稿（优先 scripts/，fallback drafts/）
+  ↓
+自动提醒：去 AI 味？做封面？
+  ↓
+AI 设计全新主题色板（不重复使用已有主题）
+  ↓
+生成两个文件：
+  · 清洁版 HTML → 直接粘贴公众号后台
+  · 预览版 HTML → 双击看手机效果 + 一键复制
+  ↓
+完成。下一步 "启动预测"
 ```
+
+**排版规范**：适配微信公众号 CSS 白名单、自动 section 嵌套、flex 布局、图片圆角阴影、外链自动转底部引用。之前用过的主题（脉冲、刃、纸墨、构、编、壳等）作为备选，用户说"用上次的主题"即可复用。
 
 ---
 
@@ -77,9 +117,9 @@ cp -r skills/grindraft-init ~/your-project/.claude/skills/
 | `grindraft-seed` | 找选题 | 深度对话，收敛到一个角度 |
 | `grindraft-write` | 写文章 | AI 出初稿（low/medium/high 三种自由度） |
 | `grindraft-humanize` | 去 AI 味 | L1-L4 四层质检体系 |
-| `grindraft-cover` | 设计封面 | 40 套模板自动匹配 + HTML 预览 |
+| **`grindraft-cover`** | **设计封面** | **40 套模板自动匹配 + HTML/PNG 预览** |
 | `grindraft-polish` | 打磨标题 | 标题候选 + 简介 + 封面提示词 |
-| `grindraft-format` | 排版 | Markdown → 公众号兼容 HTML |
+| **`grindraft-format`** | **排版** | **Markdown → 公众号兼容 HTML，一键** |
 | `grindraft-predict` | 启动预测 | 7 维盲打分 + bucket 押注（⚠️ immutable） |
 | `grindraft-publish` | 已发布 | 登记 URL，更新状态 |
 | `grindraft-retro` | 复盘 | T+3 数据回收 + 验证预测 |
@@ -114,29 +154,9 @@ cp -r skills/grindraft-init ~/your-project/.claude/skills/
 
 ---
 
-## 项目结构
-
-初始化后，你的文章项目会变成：
-
-```
-<你的项目>/
-├── rubric_notes.md          # 评分规则（7 维公式）
-├── style_guide.md           # 你的写作风格（从修改中沉淀）
-├── STATUS.md                # 状态看板
-├── .grindraft-state.json    # 系统状态
-├── drafts/                  # AI 初稿
-├── scripts/                 # 你改完的终稿
-├── predictions/             # ⚠️ 预测日志（不可修改）
-├── output/                  # 排版 HTML
-├── retro/                   # 复盘数据
-└── candidates.md            # 选题池
-```
-
----
-
 ## 依赖
 
-- **Node.js + puppeteer + canvas**（可选）：封面 PNG 导出需要。HTML 预览无需依赖。
+- **Node.js + puppeteer + canvas**（可选）：封面 PNG 导出需要。HTML 预览和排版均无需依赖。
 - **aihot API**：热点抓取数据源，公开免费，无需 token。
 
 ---
