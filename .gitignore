@@ -1,6 +1,9 @@
 .grindraft-cache/
+.grindraft/
 .grindraft-state.json
 node_modules/
 *.log
 *.zip
 .DS_Store
+.codegraph/
+.reasonix/

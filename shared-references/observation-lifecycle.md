@@ -8,6 +8,7 @@
 2. 被吸收为正式维度的观察 → **从"观察记录"段删除，升级到公式段**
 3. git history 才是档案——不需要在 markdown 文件里保留"我曾经以为 X，但其实..."
 4. 每个观察必须可追溯到具体数据点
+5. **只接收 blind prediction 产生的观察**：rubric_notes.md 的"观察记录"段只写来自 blind prediction → 复盘 → 验证/推翻流程的观察。retrospective 分析（初始化历史文章导入时产生的）的观察只留在 prediction.md 的"已知数据下的观察"段，不写入 rubric_notes.md——因为它们是在已知数据后写的马后炮，不能和 blind 观察混在一起
 
 ## rubric_notes.md 的结构
 

@@ -12,14 +12,14 @@ allowed-tools:
 
 ## Overview
 
-读 `.grindraft-state.json` + `candidates.md` + `predictions/` → 渲染状态看板 → 写入 `STATUS.md` 并展示。
+读 `.grindraft-state.json` + `candidates.md` + `articles/` → 渲染状态看板 → 写入 `STATUS.md` 并展示。
 
 ## 看板模板
 
 **⚠️ STATUS.md 文件必须以 `<!-- QUICK_STATUS: ... -->` 行开头。** 此行是 AI 快速读取的机器可解析锚点——`Read` 工具读文件头 3 行即可拿到全部核心指标。
 
 ```markdown
-<!-- QUICK_STATUS: {mode} | {rubric_version} | {calibration_samples}样本 | {pending_retros_count}待复盘 | 选题池{candidates_count}条 | 最后复盘{last_retro_date} | 最后发布{last_published_date} -->
+<!-- QUICK_STATUS: {mode} | {rubric_version} | {calibration_samples}样本 | {historical_samples}历史 | {pending_retros_count}待复盘 | 选题池{candidates_count}条 | 最后复盘{last_retro_date} | 最后发布{last_published_date} -->
 # 磨稿状态看板 — YYYY-MM-DD
 
 ## 📊 基本状态
@@ -27,8 +27,9 @@ allowed-tools:
 | 项目 | 值 |
 |---|---|
 | 模式 | cold-start (剩余 N 篇简化预测) / calibration |
-| Rubric | v{N} {等权/加权} |
-| 校准样本 | N 篇 |
+| Rubric | v{N} {等权/加权}{从 N 篇历史文章拟合} |
+| 校准样本 | N 篇（盲预测+复盘完成） |
+| 历史文章 | N 篇（初始化导入） |
 | Confidence | 🔴/🟡/🟢/🟣 |
 
 ## 📝 选题池
@@ -43,20 +44,27 @@ allowed-tools:
 
 ## 📝 草稿进度
 
-扫 `drafts/` 下所有文件，判断每篇当前阶段：
+扫 `articles/` 下所有文件夹，判断每篇当前阶段：
 
 | 文章 | 阶段 | 下一步 |
 |---|---|---|
-| mimo降价战 | 已排版 ✅ 已发 ✅ | — |
-| nvidia-polar | 已排版 ✅ 已发 ✅ | — |
-| image2开源 | 已排版 ✅ 已预测 ✅ | 发URL |
-| fde架构师 | 终稿 ✓ | 排版 |
-| agent之争 | 待改 | 改完→去味→排版 |
+| mimo降价战 | 已发 ✅ | — |
+| nvidia-polar | 已发 ✅ | — |
+| image2开源 | 已预测 ✅ | 发URL |
+| fde架构师 | 已排版 ✅ | 启动预测 |
+| agent之争 | 封面 ✅ | 排版 |
+| R1推理 | 配图 ✅ | 设计封面 |
+| 开源出海 | 终稿 ✓ | 配图 |
+| AI面试 | 去味完成 ✅ | 设计封面 |
+| 长上下文 | 待改 | 改完→去味→配图→封面→排版→预测 |
 
 阶段判断逻辑：
-- 草稿存在、output/无同款 → "待改"
-- output/有同款、predictions/无同款 → "已排版，待预测"
-- predictions/有同款、未发布 → "已预测，待发布"
+- draft.md 存在、final.md 不存在 → "待改"
+- final.md 存在、cover/preview.html 不存在 → "已定稿，待封面"
+- cover/preview.html 存在、illustrations/ 为空（无 shot-list.md）→ "封面已完成，待配图"（或跳过）
+- cover/preview.html 存在、output.html 不存在 → "封面 ✅ 待排版"
+- output.html 存在、prediction.md 不存在 → "已排版，待预测"
+- prediction.md 存在、未发布 → "已预测，待发布"
 - 已发布 → "已发"
 
 ## 📈 预测池
@@ -77,6 +85,19 @@ allowed-tools:
 - 连续同向偏差：N 次（高估/低估）
 - 极端偏差次数：N
 - 是否建议 bump：是/否
+
+## 📊 基准指标
+
+（数据来源：`benchmark.md`，与 `.grindraft-state.json` 的 `baseline_metrics` 同步。无历史数据则为 —。）
+
+| 指标 | 基准值 | 样本数 |
+|------|--------|--------|
+| 平均阅读量 | {N} | {N} |
+| 分享率 | {X.X}% | {N} |
+| 收藏率 | {X.X}% | {N} |
+| 留言率 | {X.X}% | {N} |
+
+> 标注"—"的指标因数据不足无法计算。基准值随每次复盘自动更新。
 
 ## 🧹 维护提醒
 

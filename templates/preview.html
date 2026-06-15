@@ -1323,7 +1323,6 @@ $('#btnExample').addEventListener('click', function() {
   htmlSource.value = ex;
   renderContent();
   autoSave();
-  captureOriginalSource();
   showToast('已加载示例 ✓ (宽度: ' + w + 'px)');
 });
 
@@ -1334,7 +1333,6 @@ $('#btnClear').addEventListener('click', function() {
   htmlSource.value = '';
   renderContent();
   autoSave();
-  captureOriginalSource();
 });
 
 /* ═══════════════════════════════════════════
@@ -1680,9 +1678,11 @@ renderContent = function() {
   }
 };
 
-// Save original clean HTML after any content load (preload, paste, drop, example)
+// Save original HTML after preload or first manual load
 function captureOriginalSource() {
-  originalSourceHTML = htmlSource.value;
+  if (!originalSourceHTML && htmlSource.value.trim()) {
+    originalSourceHTML = htmlSource.value;
+  }
 }
 
 // Override the preload to capture original

@@ -4,7 +4,7 @@ Grindraft (磨稿) — Claude Code plugin for WeChat long-form article writing w
 
 ## Architecture
 
-16 independent skills covering the full content creation lifecycle:
+17 independent skills covering the full content creation lifecycle:
 
 | Phase | Skill | Description |
 |-------|-------|-------------|
@@ -13,6 +13,7 @@ Grindraft (磨稿) — Claude Code plugin for WeChat long-form article writing w
 | Ideation | `grindraft-seed` | Topic exploration through dialogue |
 | Writing | `grindraft-write` | AI draft generation (3 autonomy levels) |
 | Polish | `grindraft-humanize` | 4-layer AI-tells removal |
+| Polish | `grindraft-illustrate` | Inline illustration generation (Xiaohei style) |
 | Polish | `grindraft-cover` | Cover design from 40 templates |
 | Polish | `grindraft-polish` | Title candidates + cover prompts |
 | Format | `grindraft-format` | Markdown → WeChat-compatible HTML |
@@ -48,17 +49,29 @@ After `grindraft-init`, the user's project will have:
 
 ```
 <user-project>/
-├── rubric_notes.md          # Scoring rules (source of truth)
-├── style_guide.md           # Personal style guide
-├── WORKFLOW.md              # Workflow documentation
-├── STATUS.md                # Dashboard
-├── .grindraft-state.json    # Shared state
-├── drafts/                  # AI drafts
-├── scripts/                 # User-edited finals
-├── predictions/             # Immutable prediction logs
-├── output/                  # Formatted HTML
-├── retro/                   # Retrospective data
-└── candidates.md            # Topic pool
+├── rubric_notes.md              # Scoring rules (source of truth)
+├── style_guide.md               # Personal style guide
+├── WORKFLOW.md                  # Workflow documentation
+├── STATUS.md                    # Dashboard
+├── .grindraft-state.json        # Shared state
+├── articles/                    # Per-article directories
+│   └── {title}_{YYYY-MM-DD}/
+│       ├── draft.md             # AI draft
+│       ├── final.md             # User-polished final
+│       ├── prediction.md        # Immutable prediction log
+│       ├── output.html          # Formatted HTML
+│       ├── output-preview.html  # Mobile preview HTML
+│       ├── cover/               # Cover images
+│       │   ├── preview.html
+│       │   ├── cover-2x35.png
+│       │   └── cover-1x1.png
+│       ├── illustrations/       # Inline illustrations
+│       │   ├── shot-list.md
+│       │   └── 01-{theme}.png
+│       └── retro/               # Retrospective raw data
+│           └── report.md
+├── plates/style-diffs/          # Edit history diffs
+└── candidates.md                # Topic pool
 ```
 
 ## Date Rule (Highest Priority)
@@ -67,7 +80,7 @@ Always fetch the real current date via system command before any time-sensitive 
 
 ## Key Dependencies
 
-- **Node.js + puppeteer + canvas** (optional): Required for `grindraft-cover` PNG export. Cover HTML preview works without dependencies.
+- **Node.js 18+** (optional): Required for `grindraft-cover` PNG export (`puppeteer` + `canvas`) and `grindraft-illustrate` image generation. Cover HTML preview works without Node.js.
 - **aihot API**: Public, no auth required. Used by `grindraft-trends` for trend fetching.
 
 ## Adding New Content Formats

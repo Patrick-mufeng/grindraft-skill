@@ -17,7 +17,7 @@ allowed-tools:
 ## Overview
 
 ```
-[用户：启动预测 scripts/<id>.md]
+[用户：启动预测 articles/{标题}_{日期}/final.md]
   ↓
 [Phase 0: Blind check 自检]
   ↓
@@ -56,10 +56,23 @@ allowed-tools:
 - `mode = "cold-start"` → 简化版（组件 1-3 仅）
 - `mode = "calibration"` → 完整版（全部 7 组件）
 
+### Phase 0.7: 风格沉淀
+
+按 [shared-references/style-precipitation.md](../../shared-references/style-precipitation.md) 检查用户是否在预测前做了最后一次修改：
+
+1. 读 `.grindraft-cache/precipitation-log.jsonl`，取本文最近的 file_hash
+2. 算当前 `articles/{标题}_{日期}/final.md`（或 draft.md）的正文 hash
+   ```bash
+   sed -n '/^---$/,/^---$/!p' articles/{标题}_{日期}/final.md | tail -n +2 | sha256sum | cut -c1-12
+   ```
+3. hash 不同 → 做一轮新沉淀（diff → 识别 pattern → 去重写入 style_guide.md）
+4. hash 一致 → 跳过（无新改动）
+
+> 预测前沉淀确保：用户写稿到预测之间所有手动修改的 pattern 都被捕捉，不影响预测的 blind 属性。沉淀只读写 style_guide.md，不碰 prediction.md。
+
 ### Phase 1: 读文件
 
-1. **优先读 `scripts/<id>.md`**（用户改完的终稿）。如果 scripts/ 下没有同款文件，fallback 到 `drafts/<id>.md`。
-   - 如果 fallback 到 drafts/ → 在预测 header 中标注 `Script Path: drafts/` 并提醒用户"预测的是 drafts/ 初稿，不是 scripts/ 终稿。要继续吗？"
+1. **读 `articles/{标题}_{日期}/final.md`**（用户改完的终稿）。
 2. 算 script_hash = sha256[:12]（对实际读取的文件内容做 hash）
 3. 读 `rubric_notes.md` 当前公式
 4. 读 `.grindraft-state.json` → rubric_version, calibration_samples, mode
@@ -130,7 +143,7 @@ Step 5: 异常检测（强制！）
 
 ### Phase 7: 落盘
 
-文件名：`predictions/YYYY-MM-DD_<中文简短标题>.md`（与 draft 同名，只是目录不同）
+文件名：`articles/{标题}_{日期}/prediction.md`
 
 Header 必填字段见 [prediction-anatomy.md](../../shared-references/prediction-anatomy.md)。
 留空的 `## 复盘` 段。
@@ -173,7 +186,7 @@ Header 必填字段见 [prediction-anatomy.md](../../shared-references/predictio
 
 | # | 目标 | 读什么 | 通过条件 |
 |---|---|---|---|
-| 1 | 预测文件 | `predictions/<date>_<short>.md` | 文件存在，含 `## 预测 v1` 段且非空，`## 复盘` 段存在（可为占位） |
+| 1 | 预测文件 | `articles/{标题}_{日期}/prediction.md` | 文件存在，含 `## 预测 v1` 段且非空，`## 复盘` 段存在（可为占位） |
 | 2 | state.json - cold_start | `.grindraft-state.json` | `cold_start_remaining` 已递减（cold-start 模式时） |
 | 3 | state.json - prediction_at | `.grindraft-state.json` | `last_prediction_at` 已更新 |
 | 4 | candidates.md | `candidates.md` | 如果选题来自 candidates，对应条目 status 已改为 `published`（仅在 Phase 8 衔接发布路径时） |
@@ -182,7 +195,7 @@ Header 必填字段见 [prediction-anatomy.md](../../shared-references/predictio
 
 ```
 📋 自检 Phase 9:
-  □ predictions/<file> → ## 预测 v1 已写入，{N} 字节 ✅
+  □ articles/{标题}_{日期}/prediction.md → ## 预测 v1 已写入，{N} 字节 ✅
   □ state.json → cold_start_remaining: N（已递减） ✅
   □ state.json → last_prediction_at 已更新 ✅
   □ candidates.md → 无联动或已更新（跳过/✅）

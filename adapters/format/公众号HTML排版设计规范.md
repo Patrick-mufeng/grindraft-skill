@@ -651,6 +651,18 @@ transform: rotate(0deg);
 
 ---
 
+#### 🌸 案例 7：粉红 Zine — 大胆 × 杂志感 × 不正经但认真
+
+```
+色板：  ink #18181b（浓黑）  accent #ec4899（粉红）
+        accent2 #facc15（明黄）
+        surface #faf6f2（米白）  body #334155  mute #71717a
+        card #ffffff（白卡）  line #d4d4d8
+        highlight #fce7f3（粉底编号）  urgent #18181b（黑底黄字）
+```
+
+**设计特征**：像一本印刷杂志的头版。超大号透明粉色章节编号（01-10）作为背景元素铺在标题左上方。旋转标签（粉色/黄色/黑色）打破规整感。主标题用极紧字距（-0.06em）加黑体加粗。黄色高亮块作为标题下的"标记线"。底部用黑色底板 + 旋转的粉色小标签。信息卡用彩色边框 + 阴影模拟贴纸。金句用粉底白字荧光笔块。数据用三栏彩色高亮数字卡。pull quote 上下粉色边框居中斜体。按钮用黑底白字或粉底白字。分隔符用 `. . .` 三点虚线。适合轻松/有态度/推荐类/白嫖信息类内容。
+
 ## 第六部分：色彩系统
 
 ### 6.1 颜色值格式
@@ -748,6 +760,14 @@ primary: #000       accent: #000
 surface: #ffffff    s2: #fafafa    s3: #f0f0f0
 border: #e0e0e0     ink: #1a1a1a
 mute: #888          body: #1a1a1a
+```
+
+#### 🌸 粉红 Zine
+```
+primary: #ec4899    accent: #facc15
+surface: #faf6f2    s2: #fdf2f8    s3: #fef9c3
+border: #d4d4d8     ink: #18181b
+mute: #71717a       body: #334155
 ```
 
 ---

@@ -80,7 +80,7 @@ curl -sH "User-Agent: $UA" "https://aihot.virxact.com/api/public/items?mode=sele
 ### Phase 3: 去重
 
 1. 对每个 item 检查 `candidates.md` 是否已有同 id → 跳过
-2. 检查 `predictions/*.md` 是否已有同 id → 跳过（已写过的选题）
+2. 检查 `articles/*/prediction.md` 是否已有同 id → 跳过（已写过的选题）
 3. 检查 `.grindraft-cache/trends-history.jsonl` 是否有同 id 且 `rejected_at` 在 6 个月内 → 跳过
 
 ### Phase 4: 粗打分

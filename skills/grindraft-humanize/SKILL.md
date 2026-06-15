@@ -1,7 +1,9 @@
 ---
 name: grindraft-humanize
 description: |
-  四层去 AI 味自检体系（通用版）——从硬规则扫描到活人感终审，逐层修复 AI 写作 tells。读完 style_guide.md 了解用户个人禁区。触发词："去 AI 味"/"humanize"/"去味"/"修一下"/"四层自检"。
+  四层去 AI 味自检体系（通用版）——从硬规则扫描到活人感终审，逐层修复 AI 写作 tells。
+  **由用户主动调用**（说"去 AI 味"），不是自动流程的一部分。
+  读完 style_guide.md 了解用户个人禁区。触发词："去 AI 味"/"humanize"/"去味"/"修一下"/"四层自检"。
 allowed-tools:
   - Bash
   - Read
@@ -17,11 +19,13 @@ allowed-tools:
 ## Overview
 
 ```
-[用户：去 AI 味 drafts/<id>.md]
+[用户：去 AI 味 articles/{标题}_{日期}/draft.md]
   ↓
 [Phase 0: 读 style_guide.md 拿个人禁区]
   ↓
-[Phase 1: L1 硬规则扫描]
+[Phase 0.5: 风格沉淀 — diff 当前终稿 vs AI 初稿，去重写入 style_guide]
+  ↓
+[Phase 1: L1 硬规则扫描]  ← 沉淀出的个人禁区已在此生效
   ↓
 [Phase 2: L2 风格一致检查]
   ↓
@@ -42,7 +46,23 @@ allowed-tools:
 
 如果 style_guide.md 的禁区段为空 → 提示"你还没有个人禁区列表。每次改稿时告诉我你特别不喜欢的表达，我会记到 style_guide.md 里。"
 
-## Phase 1: L1 硬规则扫描
+## Phase 0.5: 风格沉淀（改稿 pattern 自动提取）
+
+在去 AI 味之前，先 diff 用户当前版本 vs AI 初稿，提取用户的改写 pattern 写入 style_guide.md。
+这样 L1 扫描就能立刻用上刚沉淀的个人禁区。
+
+按 [shared-references/style-precipitation.md](../../shared-references/style-precipitation.md) 执行：
+
+1. **检查是否需要沉淀**：读 `.grindraft-cache/precipitation-log.jsonl`，看本文最近一次沉淀时的 file_hash
+2. **计算当前 hash**：`articles/{标题}_{日期}/final.md` 或 `draft.md` 的正文 sha256[:12]
+   - hash 一致 → 跳过（无新改动）
+3. **Diff**：当前版本 vs 上一轮沉淀时的快照（首轮 vs AI 初稿 draft.md）
+4. **识别 pattern**（砍掉的 AI 词/新增的口语表达/结构偏好）
+5. **去重写入 style_guide.md**：逐条比对，已有则跳过，同义变体标"待验证"
+6. **记录日志**：`{"article": "{标题}_{日期}", "round": N, "file_hash": "...", "patterns_written": [...], "precipitated_at": "ISO"}`
+7. **更新快照**：将当前文件复制为 `plates/style-diffs/{标题}_{日期}_precipitated.md`（下次 diff 的基准）
+
+> **纪律**：只沉淀 ≥2 次出现的 pattern。单次改动标"待验证"不写入正式规则。
 
 这一层是绝对不会被接受的东西。**任何一项不通过就必须修复，没有例外。**
 
@@ -153,21 +173,7 @@ allowed-tools:
 
 **通过标准**：L4-1 到 L4-4 整体感觉"这像是真人写的"。任何一项让你觉得"这段 AI 味太重了" → 返回修复。
 
-### Phase 4.5: 改稿差异沉淀到 style_guide
-
-去 AI 味完成后，对比 AI 初稿和你修改后的版本：
-
-1. Diff 两版：AI 初稿（去味前）vs 当前版本（去味后 + 你手动改的）
-2. 识别你**手动改了什么**：
-   - 砍掉了哪些 AI 常用词（"说白了""本质上""首先其次"等）
-   - 把哪些长句改短了
-   - 加了哪些口语化表达
-   - 删了哪类句子
-3. 如果有新发现的 pattern → 追加到 `style_guide.md` 的"绝对禁区"或"推荐口语化词组"段
-4. 追加到"改稿历史观察"表，记录：日期、文章ID、改了什么的摘要
-5. 如果 style_guide 的"我的写作人格"段仍为空 → 根据你的修改风格，提议一句人格描述
-
-**纪律**：只沉淀"你反复出现的行为"，不因为一次改动就写进去。如果 pattern 还没到 ≥2 次，标"待验证"。
+（风格沉淀已在 Phase 0.5 完成 — 见上方 Phase 0.5）
 
 ## Phase 5: 输出质检报告 + 落盘
 
@@ -202,8 +208,8 @@ allowed-tools:
 
 **落盘**：
 
-1. **备份原稿**：覆盖 draft 前，先把去味前版本复制到 `plates/style-diffs/<date>_<id>_before.md`。这确保后续 diff 和 style_guide 沉淀有源数据。
-2. 覆盖原 draft 文件（保留 header 的脚手架警告）。
+1. **备份原稿**：覆盖 draft 前，先把去味前版本复制到 `plates/style-diffs/{标题}_{日期}_before.md`。这确保后续 diff 和 style_guide 沉淀有源数据。
+2. 覆盖原 draft 文件为 `articles/{标题}_{日期}/final.md`（去味后即为终稿）。
 
 ### Phase 6: 自检 — 逐项重读验证写入完整性
 
@@ -213,19 +219,21 @@ allowed-tools:
 
 | # | 目标 | 读什么 | 通过条件 |
 |---|---|---|---|
-| 1 | draft 文件 | `drafts/<id>.md` | 文件存在，L1-L4 修复已体现在正文中 |
-| 2 | 备份文件 | `plates/style-diffs/<date>_<id>_before.md` | 文件存在，内容与去味前一致 |
-| 3 | style_guide.md（如有写入） | `style_guide.md` | 如 Phase 4.5 有新 pattern，已在文件中可找到 |
+| 1 | draft 文件 | `articles/{标题}_{日期}/final.md` | 文件存在，L1-L4 修复已体现在正文中 |
+| 2 | 备份文件 | `plates/style-diffs/{标题}_{日期}_precipitated.md` 或 `{标题}_{日期}_before.md` | 文件存在，内容与当前版一致 |
+| 3 | style_guide.md（如有写入） | `style_guide.md` | 如 Phase 0.5 有新 pattern，已在文件中可找到 |
 | 4 | style_guide 改稿历史 | `style_guide.md` 的"改稿历史观察"表 | 如本次做了额外手动修改，已追加新行 |
+| 5 | precipitation 日志（如有写入） | `.grindraft-cache/precipitation-log.jsonl` | 如 Phase 0.5 有沉淀，日志行存在 |
 
 #### 自检输出格式
 
 ```
 📋 自检 Phase 6:
-  □ drafts/<file> → L1-L4 修复已落盘 ✅
-  □ plates/style-diffs/<date>_<id>_before.md → 备份已保存 ✅
+  □ articles/{标题}_{日期}/final.md → L1-L4 修复已落盘 ✅
+  □ plates/style-diffs/ → 沉淀快照已保存 ✅
   □ style_guide.md → 无新 pattern 写入，跳过
   □ style_guide.md → 改稿历史已追加 ✅
+  □ precipitation-log.jsonl → 本轮沉淀已记录 ✅（或"无新沉淀，跳过"）
 
 ✅ 去 AI 味自检全部通过
 ```

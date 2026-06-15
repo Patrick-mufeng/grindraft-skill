@@ -31,7 +31,7 @@ node -e "require('puppeteer');require('canvas');console.log('ok')"
 ```
 用户: "设计封面"（或文章改完后自动提示）
   ↓
-Phase 0: 从 drafts/ 读取文章
+Phase 0: 从 articles/{标题}_{日期}/final.md 读取文章
   ↓
 Phase 1: 三维分析（情绪/领域/IP）
   ↓
@@ -50,9 +50,9 @@ Phase 5: 改稿循环（最多 5 轮）
 
 ## Phase 0 · 读取文章
 
-从 `drafts/<id>.md` 读取文章内容。**只读正文**（跳过 frontmatter、标题候选、简介、封面提示词段）。正文起始位置为最后一个 `---` 分隔线之后。
+从 `articles/{标题}_{日期}/final.md` 读取文章内容。**只读正文**（跳过 frontmatter、标题候选、简介、封面提示词段）。正文起始位置为最后一个 `---` 分隔线之后。
 
-如果 `drafts/` 下有多个文件，让用户选。
+如果 `articles/` 下有多个文件夹，让用户选。
 
 ---
 
@@ -122,10 +122,10 @@ Phase 5: 改稿循环（最多 5 轮）
 
 ### 4.2 生成预览 HTML
 
-输出到 `output/{文件夹名}/cover/`：
+输出到 `articles/{标题}_{日期}/cover/`：
 
 ```
-output/AI排版/
+articles/{标题}_{日期}/
 └── cover/
     ├── preview.html       ← 2.35:1 + 1:1 双版预览
     ├── cover-2x35.png     ← （需 Node.js）
@@ -145,7 +145,7 @@ output/AI排版/
 
 先跑依赖检查（见"前置依赖"），通过后分两步。
 
-> **{文件夹名}** 为 Phase 4.2 中 `output/` 下的子目录名，规则：取文章 draft 文件名去掉日期和 `.md` 后缀，例如 `2026-06-06_mirofish.md` → 文件夹名 `mirofish`。
+> **{标题}_{日期}** 为文章文件夹名，格式如 `DeepSeek价格战_2026-05-27`。
 
 **Step 1 — 截图单张**：生成 `screenshot.js` 并执行。
 
@@ -157,8 +157,8 @@ const path = require('path');
 (async () => {
   const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
-  const htmlPath = 'file:///' + path.resolve('output/{文件夹名}/cover/preview.html').replace(/\\/g, '/');
-  const outDir = path.resolve('output/{文件夹名}/cover');
+  const htmlPath = 'file:///' + path.resolve('articles/{标题}_{日期}/cover/preview.html').replace(/\\/g, '/');
+  const outDir = path.resolve('articles/{标题}_{日期}/cover');
 
   await page.setViewport({ width: 1600, height: 900 });
   await page.goto(htmlPath, { waitUntil: 'networkidle0' });
@@ -188,7 +188,7 @@ const path = require('path');
 const { createCanvas, loadImage } = require('canvas');
 const fs = require('fs');
 const path = require('path');
-const outDir = path.resolve('output/{文件夹名}/cover');
+const outDir = path.resolve('articles/{标题}_{日期}/cover');
 
 (async () => {
   const img235 = await loadImage(path.join(outDir, 'cover-2x35.png'));
@@ -210,8 +210,8 @@ const outDir = path.resolve('output/{文件夹名}/cover');
 执行：
 
 ```bash
-node output/{文件夹名}/cover/screenshot.js   # Step 1
-node output/{文件夹名}/cover/merge.js         # Step 2
+node articles/{标题}_{日期}/cover/screenshot.js   # Step 1
+node articles/{标题}_{日期}/cover/merge.js         # Step 2
 ```
 
 执行完后删除两个临时脚本。
@@ -233,10 +233,10 @@ node output/{文件夹名}/cover/merge.js         # Step 2
 
 ## Key Rules
 
-1. **只读 drafts/ 正文段**——不读 frontmatter 和候选段
+1. **只读 articles/{标题}_{日期}/final.md 正文段**——不读 frontmatter 和候选段
 2. **模板只读**——不修改 cover-templates/ 下的文件
 3. **一次一个模板**——不混搭
-4. **输出到 output/{文件}/cover/**——与文章 HTML 同级
+4. **输出到 articles/{标题}_{日期}/cover/**——与文章其他产出同目录
 
 ## Integration
 

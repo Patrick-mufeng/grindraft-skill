@@ -19,7 +19,7 @@ allowed-tools:
 ## Overview
 
 ```
-[用户：打磨标题 drafts/<id>.md]
+[用户：打磨标题 articles/{标题}_{日期}/draft.md]
   ↓
 [Phase 0: 读文章 + 理解核心]
   ↓
@@ -183,7 +183,7 @@ allowed-tools:
 3. **封面提示词**：写入 `cover_prompts/` 目录下的独立 `.md` 文件
 4. 在文章 header 中追加元信息
 
-如果用户不选——全部保留到 `output/<id>_polish.md` 供后续参考。
+如果用户不选——全部保留到 `articles/{标题}_{日期}/polish.md` 供后续参考。
 
 ---
 

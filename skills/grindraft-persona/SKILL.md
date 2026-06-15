@@ -13,7 +13,7 @@ allowed-tools:
 
 # grindraft-persona — 受众画像
 
-从 `predictions/*.md` 复盘段的留言数据，聚类出公众号真实读者画像，写入 `audience.md`。
+从 `articles/*/prediction.md` 复盘段的留言数据，聚类出公众号真实读者画像，写入 `audience.md`。
 
 ## ⚠️ 污染隔离
 
@@ -25,7 +25,7 @@ allowed-tools:
 
 ### Phase 0: 收集数据
 
-1. Glob `predictions/*.md`，读每个文件的 `## 复盘` 段
+1. Glob `articles/*/prediction.md`，读每个文件的 `## 复盘` 段
 2. 抽取每篇的 top 留言（带赞数）+ 实绩数据
 3. 至少有 3 篇有留言数据的复盘 → 可以首次派生画像
 

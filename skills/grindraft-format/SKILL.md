@@ -34,12 +34,13 @@ allowed-tools:
 | 构 | 黑底金字标题带 + 3px粗线 + 金色数字 |
 | 编 | 暖灰底 + 赤陶点缀 + 细横线，编辑感 |
 | 壳 | 终端美学 + 珊瑚红 + monospace，明亮 |
+| 粉红Zine | 米白底 + 粉/黄/黑撞色 + 旋转标签 + 大号透明编号 + 杂志感 |
 
 用户不选 → AI 自行设计新主题。
 
 ## 格式解析
 
-读 `drafts/<id>.md`，识别结构：
+读 `articles/{标题}_{日期}/final.md`，识别结构：
 
 - `---` 包裹的 frontmatter → 提取 `title` 和 `summary`，不排版
 - `## 📝 标题候选` → 跳过
@@ -50,21 +51,17 @@ allowed-tools:
 
 ## Workflow
 
-### Phase 0: 读文件 + 去 AI 味提醒
+### Phase 0: 读文件 + 风格沉淀 + 封面提醒
 
-1. **优先读 `scripts/<id>.md`**（用户改完的终稿）。如果 scripts/ 下没有同款文件，fallback 到 `drafts/<id>.md`
+1. **读 `articles/{标题}_{日期}/final.md`**（用户改完的终稿）。
 2. 提取 frontmatter 的 `title`（作为 HTML 标题）
 3. 跳过候选段，取正文
-4. 如果读的是 drafts/ 而非 scripts/ → 提醒用户"终稿在 scripts/ 下吗？排版用的是 drafts/ 初稿"
-5. **去 AI 味提醒**：如果文章还没有跑过 humanize，排版前自动问一句
-
-```
-排版前要先"去 AI 味"吗？
-A) 去 AI 味 → 四层自检，修完再排版
-B) 直接排版 → 跳过
-```
-
-6. **封面提醒**：如果文章还没有做封面，排版前自动问一句
+4. **风格沉淀**：按 [shared-references/style-precipitation.md](../../shared-references/style-precipitation.md) 检查是否有新改动
+   - 读 precipitation-log，取本文最近的 file_hash
+   - 算当前 final.md 的正文 hash
+   - hash 不同 → 做一轮新沉淀（diff → 识别 pattern → 去重写入 style_guide）
+   - hash 一致 → 跳过（无新改动）
+5. **封面提醒**：如果文章还没有做封面，排版前自动问一句
 
 ```
 封面做了吗？要先设计吗？
@@ -86,35 +83,55 @@ B) 直接排版 → 跳过
 
 | 规则 | 说明 |
 |---|---|
-| HTML 平铺 | `output/<date>_<id>_<short>.html`（禁止在 output/ 下创建子目录） |
-| 与源文件同名 | `<date>` `<id>` `<short>` 必须与 drafts/ 或 scripts/ 中的源文件完全一致 |
-| 封面图片 | 如有封面，放在 `output/cover/<date>_<id>_<short>/` 子目录下，不影响 HTML 路径 |
-
-> ⚠️ **禁止** `output/hermes-desktop/index.html`、`output/mirofish/2026-06-06_mirofish.html` 等子目录结构。所有 HTML 必须平铺在 output/ 根目录下——这是 status 看板和 retro 跨文件校验能找到它们的前提。
+| 输出到文章文件夹 | `articles/{标题}_{日期}/output.html` 和 `articles/{标题}_{日期}/output-preview.html` |
+| 封面图片 | 如有封面，已在 `articles/{标题}_{日期}/cover/` 子目录下 |
+| 配图 | 如有配图，已在 `articles/{标题}_{日期}/illustrations/` 子目录下 |
 
 #### 落盘（两个文件）
 
-**文件 A — 清洁版**：`output/<date>_<id>_<short>.html`
-纯净排版 HTML，可直接粘贴公众号后台。与之前相同。
+**文件 A — 清洁版**：`articles/{标题}_{日期}/output.html`
+纯净排版 HTML，可直接粘贴公众号后台。
 
-**文件 B — 预览版**：`output/<date>_<id>_<short>-preview.html`
+**文件 B — 预览版**：`articles/{标题}_{日期}/output-preview.html`
 手机预览 + 一键复制。双击打开即可在手机模拟器中预览，顶部"复制到公众号"按钮一键复制。
 
 生成方式：
 1. 读取 `adapters/format/preview.html`（skill 内置预览模板，无外部依赖）
 2. 将排版生成的 HTML 原文嵌入 `<script type="text/plain" id="preload-content">` 标签内（替换 `<!-- CONTENT_PLACEHOLDER -->`）
-3. 写入 `output/<date>_<id>_<short>-preview.html`
+3. 写入 `articles/{标题}_{日期}/output-preview.html`
 
-### Phase 3: 完成
+### Phase 3: 完成 + 自动打开预览
+
+自检通过后自动打开预览页面：
+
+```bash
+# macOS
+open "articles/{标题}_{日期}/output-preview.html"
+
+# Windows
+start "" "articles/{标题}_{日期}/output-preview.html"
+
+# Linux
+xdg-open "articles/{标题}_{日期}/output-preview.html"
+```
+
+> 自动检测操作系统选择正确命令。打开后预览页面将自动加载排版内容——左侧源码，中间手机预览，右侧参数面板（宽度切换/深色模式/统计/快捷操作）。
+
+输出：
 
 ```
-✅ 排版完成：output/YYYY-MM-DD_<id>_<short>.html
+✅ 排版完成：articles/{标题}_{日期}/output.html
 主题：<自研名称>
 
-预览版：output/YYYY-MM-DD_<id>_<short>-preview.html
-（双击打开 → 手机预览 + 一键复制到公众号）
+预览版：articles/{标题}_{日期}/output-preview.html
+（已自动打开 → 三栏布局：源码 | 手机预览 | 参数面板）
 
-下一步：打开 -preview.html 预览效果 → 复制 HTML → 粘贴公众号后台 → "启动预测"
+在预览页面中可以：
+  · 左侧：查看/编辑 HTML 源码
+  · 中间：手机框实时预览效果
+  · 右侧：切换宽度 / 深色模式 / 查看统计 / 复制到公众号
+
+下一步：预览确认效果 → 复制 HTML → 粘贴公众号后台 → "启动预测"
 ```
 
 ### Phase 4: 自检 — 逐项重读验证写入完整性
@@ -125,19 +142,19 @@ B) 直接排版 → 跳过
 
 | # | 目标 | 读什么 | 通过条件 |
 |---|---|---|---|
-| 1 | 清洁版 HTML | `output/<date>_<id>_<short>.html` | 文件存在，字节数 > 1000（有效 HTML），含 `<section` 标签 |
-| 2 | 预览版 HTML | `output/<date>_<id>_<short>-preview.html` | 文件存在，字节数 > 5000（含完整预览模板），含 `preload-content` 且不含 `CONTENT_PLACEHOLDER` |
-| 3 | 路径正确 | 两个文件 | 文件名与 draft/script 同名（仅后缀不同） |
-| 4 | 路径平铺 | `output/` 目录 | 两个文件均在 output/ 根目录下，**不在子目录内** |
+| 1 | 清洁版 HTML | `articles/{标题}_{日期}/output.html` | 文件存在，字节数 > 1000（有效 HTML），含 `<section` 标签 |
+| 2 | 预览版 HTML | `articles/{标题}_{日期}/output-preview.html` | 文件存在，字节数 > 5000（含完整预览模板），含 `preload-content` 且不含 `CONTENT_PLACEHOLDER` |
+| 3 | 路径正确 | 两个文件 | 文件名正确（output.html / output-preview.html） |
+| 4 | 在文章文件夹内 | `articles/{标题}_{日期}/` 目录 | 两个文件均在文章文件夹内 |
 
 #### 自检输出格式
 
 ```
 📋 自检 Phase 4:
-  □ output/<file>.html → 文件存在，{N} 字节，含 section 标签 ✅
-  □ output/<file>-preview.html → 文件存在，{N} 字节，内容已嵌入 ✅
-  □ 路径一致 → 两个文件与源文件同名 ✅
-  □ 路径平铺 → 两个文件均在 output/ 根目录下 ✅
+  □ articles/{标题}_{日期}/output.html → 文件存在，{N} 字节，含 section 标签 ✅
+  □ articles/{标题}_{日期}/output-preview.html → 文件存在，{N} 字节，内容已嵌入 ✅
+  □ 路径正确 → 两个文件在文章文件夹内 ✅
+  □ 文件完整 → 两个文件均存在 ✅
 
 ✅ 排版自检全部通过
 ```
@@ -145,6 +162,6 @@ B) 直接排版 → 跳过
 #### 失败处理
 
 - ❌ HTML 不存在或过小 → **立即重新生成**
-- ❌ 文件名不匹配 → **移动到正确路径**
-- ❌ 在子目录内 → **移动到 output/ 根目录**
+- ❌ 文件名不匹配 → **修正文件名**
+- ❌ 不在文章文件夹内 → **移动到正确路径**
 - 重试后再次 re-read 确认 → 仍不通过 → 输出 `❌ 自检失败，请手动检查`

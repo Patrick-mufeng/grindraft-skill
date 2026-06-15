@@ -33,7 +33,7 @@ allowed-tools:
 
 1. 用户给了 prediction 文件路径 → 直接用
 2. 只有 URL → 读 `.grindraft-state.json` 的 `in_progress_session.file`
-3. 都没有 → 列出 `predictions/*.md` 中 header 没 `published_at` 的让用户选
+3. 都没有 → 列出 `articles/*/prediction.md` 中 header 没 `published_at` 的让用户选
 
 ### Phase 1: 更新 prediction header
 
@@ -51,8 +51,8 @@ allowed-tools:
 {
   "in_progress_session": null,
   "last_published_at": "<ISO>",
-  "last_published_file": "predictions/<filename>",
-  "pending_retros": <追加 "predictions/<filename>"——不是覆盖，是 append 到已有列表>
+  "last_published_file": "articles/{标题}_{日期}/prediction.md",
+  "pending_retros": <追加 "articles/{标题}_{日期}"——不是覆盖，是 append 到已有列表>
 }
 ```
 
@@ -73,7 +73,7 @@ allowed-tools:
 
 | # | 目标 | 读什么 | 通过条件 |
 |---|---|---|---|
-| 1 | 预测文件 | predictions/\<file\> | header 含 `Published at:` + `URL:` |
+| 1 | 预测文件 | articles/{标题}_{日期}/prediction.md | header 含 `Published at:` + `URL:` |
 | 2 | state.json | .grindraft-state.json | `last_published_at` 已更新；`last_published_file` 正确；`pending_retros` 已**追加**此文（保留旧条目） |
 | 3 | candidates.md（如有） | `candidates.md` | 对应条目 `status` 已改为 `published` |
 
@@ -81,8 +81,8 @@ allowed-tools:
 
 ```
 📋 自检 Phase 2.5:
-  □ predictions/<file> → header 含 Published at ✅
-  □ predictions/<file> → header 含 URL ✅
+  □ articles/{标题}_{日期}/prediction.md → header 含 Published at ✅
+  □ articles/{标题}_{日期}/prediction.md → header 含 URL ✅
   □ state.json → last_published_at ✅
   □ state.json → last_published_file ✅
   □ state.json → pending_retros 已追加（含 N 篇） ✅
@@ -108,9 +108,9 @@ allowed-tools:
    如果不小心看到，告诉我——我会在文件里追加 integrity warning。
 
 📅 计划复盘：T+3 天，约 YYYY-MM-DD
-   到时间说："复盘 predictions/<filename>"
+   到时间说："复盘 articles/{标题}_{日期}"
 
-📄 排版好的 HTML 在 output/ 文件夹
+📄 排版好的 HTML 在 articles/{标题}_{日期}/output.html
    别忘了去公众号后台粘贴发布～
 ```
 

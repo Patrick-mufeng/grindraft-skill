@@ -50,7 +50,7 @@ Mode C — 用户完全没想法：
 2. 读 `rubric_notes.md` 拿当前公式
 3. 读 `style_guide.md` 了解用户风格偏好
 4. 读 `audience.md`（如存在）了解受众——用于"这个角度读者会在乎吗"
-5. 读已有 `predictions/*.md` 作为历史 context
+5. 读已有 `articles/*/prediction.md` 作为历史 context
 6. 判断用户输入 → Mode A/B/C
 
 ### Phase 1: Mode 分流

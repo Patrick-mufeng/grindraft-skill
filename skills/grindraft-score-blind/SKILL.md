@@ -1,7 +1,7 @@
 ---
 name: grindraft-score-blind
 description: |
-  INTERNAL sub-agent for blind 7-dim rubric scoring. **NOT a user-facing skill — do NOT invoke from main conversation**. Spawned by grindraft-predict Phase 2 via Task tool. Reads only script + rubric_notes.md, never sees state/predictions/audience. Returns strict JSON.
+  INTERNAL sub-agent for blind 7-dim rubric scoring. **NOT a user-facing skill — do NOT invoke from main conversation**. Spawned by grindraft-predict Phase 2 via Task tool. Reads only script + rubric_notes.md, never sees state/articles/prediction files/audience. Returns strict JSON.
 allowed-tools:
   - Read
   - Glob
@@ -17,7 +17,7 @@ spawn 时 Task prompt 传两个路径：
 - `script_path`: 终稿文件
 - `rubric_notes_path`: 当前评分公式
 
-**不传任何其他信息**。子 agent 不能读 `.grindraft-state.json`、`predictions/`、`audience.md`、`style_guide.md`。
+**不传任何其他信息**。子 agent 不能读 `.grindraft-state.json`、`articles/*/prediction.md`、`audience.md`、`style_guide.md`。
 
 ## 任务
 
@@ -60,7 +60,7 @@ spawn 时 Task prompt 传两个路径：
 
 子 agent **绝对不能读**：
 - `audience.md`（含实绩信号）
-- `predictions/*.md`（含历史预测/复盘）
+- `articles/*/prediction.md`（含历史预测/复盘）
 - `.grindraft-state.json`（含 calibration_samples 等信息）
 - `style_guide.md`（可能含用户风格偏好——sub-agent 不需要）
 
