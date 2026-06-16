@@ -42,27 +42,27 @@ function parseArgs() {
 
 function loadEnv(projectRoot) {
   const defaults = {
-    IMAGE2_BASE_URL: "https://yunwu.ai",
+    IMAGE2_BASE_URL: "",
     YUNWU_API_KEY: "",
-    YUNWU_BASE_URL: "https://yunwu.ai",
+    YUNWU_BASE_URL: "https://yunwu.ai/",
   };
 
-  // 读取优先级：.grindraft/config.env > 根目录 .env
+  // 读取优先级：.grindraft/config.env > 根目录 .env（后者先加载，前者覆盖）
   const candidates = [
-    resolve(projectRoot, ".grindraft", "config.env"),
     resolve(projectRoot, ".env"),
+    resolve(projectRoot, ".grindraft", "config.env"),
   ];
 
   for (const envPath of candidates) {
     try {
       const text = readFileSync(envPath, "utf-8");
-    for (const line of text.split("\n")) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("=")) continue;
-      const [key, ...rest] = trimmed.split("=");
-      const val = rest.join("=").trim();
-      if (key.trim() in defaults) defaults[key.trim()] = val;
-    }
+      for (const line of text.split("\n")) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("=")) continue;
+        const [key, ...rest] = trimmed.split("=");
+        const val = rest.join("=").trim();
+        if (key.trim() in defaults) defaults[key.trim()] = val;
+      }
     } catch {
       // 文件不存在则跳过
     }
@@ -92,7 +92,6 @@ async function generateViaImage2(prompt, baseUrl, model, size, config = {}, time
         model,
         prompt,
         n: 1,
-        size: size,
         aspect_ratio: aspectRatio,
         response_format: "b64_json",
       }),
@@ -137,14 +136,16 @@ async function main() {
   if (args.projectRoot) {
     projectRoot = resolve(cwd, args.projectRoot);
   } else {
-    // 从脚本位置向上找
+    // 从脚本位置向上找：scripts/ -> grindraft-illustrate/ -> skills/ -> 项目根
     const scriptDir = dirname(new URL(import.meta.url).pathname);
-    let candidate = resolve(scriptDir, "../../../../"); // scripts/ -> grindraft-illustrate/ -> skills/ -> 项目根
-    if (!hasStateFile(candidate)) candidate = resolve(candidate, "../");
-    projectRoot = candidate;
+    projectRoot = resolve(scriptDir, "../../..");
   }
 
   const config = loadEnv(projectRoot);
+  // IMAGE2_BASE_URL 未设置时从 YUNWU_BASE_URL 继承（文档：IMAGE2_BASE_URL 默认同 YUNWU_BASE_URL）
+  if (!config.IMAGE2_BASE_URL) {
+    config.IMAGE2_BASE_URL = config.YUNWU_BASE_URL;
+  }
   const image2BaseUrl = config.IMAGE2_BASE_URL;
   const outputPath = resolve(cwd, args.output);
   const retries = args.retries;
@@ -168,7 +169,8 @@ async function main() {
       const resp = await fetch(img.url);
       if (resp.ok) buf = Buffer.from(await resp.arrayBuffer());
     } else if (img.local_path) {
-      const resp = await fetch(`${image2BaseUrl.replace(/\/+$/, "")}${img.local_path}`);
+      const localPath = img.local_path.startsWith("/") ? img.local_path : `/${img.local_path}`;
+      const resp = await fetch(`${image2BaseUrl.replace(/\/+$/, "")}${localPath}`);
       if (resp.ok) buf = Buffer.from(await resp.arrayBuffer());
     }
 
@@ -190,11 +192,6 @@ async function main() {
     attempts: retries + 1,
   }));
   process.exit(1);
-}
-
-function hasStateFile(dir) {
-  try { return readFileSync(resolve(dir, ".grindraft-state.json"), "utf-8").length > 0; }
-  catch { return false; }
 }
 
 main().catch((err) => {

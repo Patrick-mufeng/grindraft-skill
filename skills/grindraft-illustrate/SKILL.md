@@ -1,4 +1,4 @@
----
+﻿---
 name: grindraft-illustrate
 description: |
   正文配图生成。读文章自动分析出配图策略（shot list），用小黑怪诞手绘风格逐张生成 16:9 横版插图。
@@ -28,16 +28,19 @@ node -v  # 需 >= 18
 
 1. **注册账号**：打开 https://yunwu.ai/register?aff=zM1f 注册
 2. **获取 API Key**：注册后进入控制台，复制你的 API Key
-3. **配置 .env**：在项目根目录 `.env` 文件中填入：
+3. **配置 API Key**：在项目根目录 `.env` 或 `.grindraft/config.env` 中填入：
 
 ```env
 # 云雾API 配置（用于正文配图生图）
 YUNWU_API_KEY=sk-你复制的API Key
-YUNWU_BASE_URL=https://yunwu.ai
+YUNWU_BASE_URL=https://yunwu.ai/
 
 # IMAGE2_BASE_URL 默认同 YUNWU_BASE_URL，通常无需修改
-# IMAGE2_BASE_URL=https://yunwu.ai
+# IMAGE2_BASE_URL=https://yunwu.ai/
 ```
+
+> 配置优先级：`.env` → `.grindraft/config.env`，后者覆盖前者。
+> 首次使用会自动创建 `.grindraft/config.env` 模板。
 
 > 📌 **为什么默认用云雾 API**：`gpt-image-2` 模型目前仅通过 API 中转站可用。云雾提供标准 OpenAI 兼容接口，注册即用，无需自建 image-2 服务。
 
@@ -45,8 +48,12 @@ YUNWU_BASE_URL=https://yunwu.ai
 
 | 方式 | 配置 | 适用场景 |
 |------|------|---------|
-| ☁️ **云雾 API**（推荐） | `.env` 中填 `YUNWU_API_KEY` 即可 | 大多数用户，开箱即用 |
-| 🖥️ **自建 image-2 服务** | `.env` 中设 `IMAGE2_BASE_URL=https://yunwu.ai` | 有自建服务的高级用户 |
+| ☁️ **云雾 API**（推荐） | `.env` 或 `.grindraft/config.env` 中填 `YUNWU_API_KEY` 即可 | 大多数用户，开箱即用 |
+| 🖥️ **自建 image-2 服务** | `.env` 或 `.grindraft/config.env` 中设 `IMAGE2_BASE_URL` 覆盖 | 有自建服务的高级用户 |
+
+
+> ℹ️ 配置优先级：`.env` → `.grindraft/config.env`，后者覆盖前者。
+> `IMAGE2_BASE_URL` 未显式设置时自动回退到 `YUNWU_BASE_URL`，通常无需配置。
 
 ---
 
@@ -122,7 +129,7 @@ Phase 5: 交付汇总
 └── .grindraft/              ← API 配置目录（不入版本控制）
     └── config.env           ← API Key 配置
         ├── YUNWU_API_KEY=sk-你的Key     ← 配图（gpt-image-2）
-        └── YUNWU_BASE_URL=https://yunwu.ai  ← 云雾 API 地址
+        └── YUNWU_BASE_URL=https://yunwu.ai/  ← 云雾 API 地址
 ```
 
 ### 实现方式
@@ -136,7 +143,7 @@ if [ ! -f .grindraft/config.env ]; then
 # 注册地址：https://yunwu.ai/register?aff=zM1f
 # 将下方 YOUR_API_KEY 替换为你的真实 Key
 YUNWU_API_KEY=sk-YOUR_API_KEY
-YUNWU_BASE_URL=https://yunwu.ai
+YUNWU_BASE_URL=https://yunwu.ai/
 EOF
   echo "✅ 已创建 .grindraft/config.env，请配置 API Key 后重试"
 fi
@@ -225,11 +232,13 @@ node skills/grindraft-illustrate/scripts/generate-illustration.mjs \
 ```
 
 脚本行为：
-- 从项目根目录 `.env` 读取 `IMAGE2_BASE_URL`（默认 `https://yunwu.ai`）
-- 直接调用 `POST {IMAGE2_BASE_URL}/v1/images/generations`（OpenAI 兼容格式）
+- 从 `.env` 和 `.grindraft/config.env` 读取配置（后者覆盖前者）
+- 配置项：`YUNWU_API_KEY`（必填）、`YUNWU_BASE_URL`（默认 `https://yunwu.ai/`）、`IMAGE2_BASE_URL`（未设置时回退到 `YUNWU_BASE_URL`）
+- 调用 `POST {IMAGE2_BASE_URL}/v1/images/generations`（OpenAI 兼容格式）
 - 从返回的 `b64_json` 解码保存为本地 PNG 文件
 - 输出 JSON：`{"success": true, "path": "...", "url": "", "attempts": 1}`
 - 模型固定使用 `gpt-image-2`，不可切换
+- 超时时间：500 秒（生图耗时较长）
 
 ### 3.3 错误处理
 
