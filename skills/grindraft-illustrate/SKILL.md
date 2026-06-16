@@ -46,7 +46,7 @@ YUNWU_BASE_URL=https://yunwu.ai
 | 方式 | 配置 | 适用场景 |
 |------|------|---------|
 | ☁️ **云雾 API**（推荐） | `.env` 中填 `YUNWU_API_KEY` 即可 | 大多数用户，开箱即用 |
-| 🖥️ **自建 image-2 服务** | `.env` 中设 `IMAGE2_BASE_URL=http://localhost:8000` | 有自建服务的高级用户 |
+| 🖥️ **自建 image-2 服务** | `.env` 中设 `IMAGE2_BASE_URL=https://yunwu.ai` | 有自建服务的高级用户 |
 
 ---
 
@@ -225,11 +225,11 @@ node skills/grindraft-illustrate/scripts/generate-illustration.mjs \
 ```
 
 脚本行为：
-- 从项目根目录 `.env` 读取 `IMAGE2_BASE_URL`（默认 `http://localhost:8000`）
-- 调用 `POST {IMAGE2_BASE_URL}/api/generate`（image-2 服务端点）
-- image-2 服务内部调用底层生图 API，将生成结果返回
-- 脚本从返回结果中下载图片到指定路径
-- 输出 JSON：`{"success": true, "path": "...", "url": "...", "revised_prompt": "..."}`
+- 从项目根目录 `.env` 读取 `IMAGE2_BASE_URL`（默认 `https://yunwu.ai`）
+- 直接调用 `POST {IMAGE2_BASE_URL}/v1/images/generations`（OpenAI 兼容格式）
+- 从返回的 `b64_json` 解码保存为本地 PNG 文件
+- 输出 JSON：`{"success": true, "path": "...", "url": "", "attempts": 1}`
+- 模型固定使用 `gpt-image-2`，不可切换
 
 ### 3.3 错误处理
 
@@ -259,7 +259,7 @@ node skills/grindraft-illustrate/scripts/generate-illustration.mjs \
 - 背景有纸纹/阴影/渐变
 - 元素太多太满
 
-由于 API 生图无法像 Codex 工具那样精确控制，QA 以人工目测为主。AI 根据返回的图片内容描述（revised_prompt）做初步判断，标注可疑项供用户确认。
+由于 API 生图无法像 Codex 工具那样精确控制，QA 以人工目测为主。AI 根据返回的图片内容做初步判断，标注可疑项供用户确认。
 
 ---
 

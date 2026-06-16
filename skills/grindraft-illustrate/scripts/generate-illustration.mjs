@@ -6,13 +6,13 @@
  *     --prompt "..." \
  *     --output "articles/{标题}_{日期}/illustrations/01-xxx.png" \
  *     [--size "1024x576"] \
- *     [--model "gpt-image-2"]
+ *     model: gpt-image-2（固定）
  *
  * 依赖: Node.js 18+（fetch 内置，零 npm 依赖）
  *
  * 流程:
  *   1. 从项目根目录 .env 读取 IMAGE2_BASE_URL
- *   2. 调用 image-2 服务的 POST /api/generate 生成图片
+ *   2. 调用 image-2 服务的 POST /v1/images/generations 生成图片
  *   3. 从返回的 URL/base64 保存到本地
  */
 
@@ -30,12 +30,10 @@ function parseArgs() {
     if (key === "prompt") args.prompt = raw[++i];
     if (key === "output") args.output = raw[++i];
     if (key === "size") args.size = raw[++i];
-    if (key === "model") args.model = raw[++i];
     if (key === "retries") args.retries = parseInt(raw[++i], 10);
     if (key === "project-root") args.projectRoot = raw[++i];
   }
   args.size ??= "1024x576";
-  args.model ??= "gpt-image-2";
   args.retries ??= 2;
   return args;
 }
@@ -79,7 +77,7 @@ async function generateViaImage2(prompt, baseUrl, model, size, config = {}, time
   const aspectMap = { "1024x576": "16:9", "1024x1024": "1:1", "1792x1024": "16:9" };
   const aspectRatio = aspectMap[size] || "16:9";
 
-  const url = `${baseUrl.replace(/\/+$/, "")}/api/generate`;
+  const url = `${baseUrl.replace(/\/+$/, "")}/v1/images/generations`;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeout);
 
@@ -93,9 +91,10 @@ async function generateViaImage2(prompt, baseUrl, model, size, config = {}, time
       body: JSON.stringify({
         model,
         prompt,
+        n: 1,
+        size: size,
         aspect_ratio: aspectRatio,
-        num_outputs: 1,
-        output_format: "png",
+        response_format: "b64_json",
       }),
       signal: controller.signal,
     });
@@ -103,12 +102,12 @@ async function generateViaImage2(prompt, baseUrl, model, size, config = {}, time
     clearTimeout(timer);
 
     if (!resp.ok) {
-      return { success: false, error: `image-2 返回 ${resp.status}: ${(await resp.text()).slice(0, 500)}` };
+      const errBody = await resp.text(); return { success: false, error: `image-2 返回 ${resp.status}: ${errBody.slice(0, 500)}` };
     }
 
     const data = await resp.json();
-    if (!data.success) {
-      return { success: false, error: `image-2 返回失败: ${data.error || "未知错误"}` };
+    if (!data || !data.data || !data.data.length) {
+      return { success: false, error: `image-2 返回数据异常: ${JSON.stringify(data).slice(0, 300)}` };
     }
 
     return { success: true, data };
@@ -154,20 +153,20 @@ async function main() {
   for (let attempt = 0; attempt <= retries; attempt++) {
     if (attempt > 0) await new Promise((r) => setTimeout(r, 3000));
 
-    const result = await generateViaImage2(args.prompt, image2BaseUrl, args.model, args.size, config);
+    const result = await generateViaImage2(args.prompt, image2BaseUrl, "gpt-image-2", args.size, config);
     if (!result.success) { lastError = result.error; continue; }
 
-    const images = result.data.images || [];
+    const images = result.data.data || [];
     if (!images.length) { lastError = "image-2 返回空图片列表"; continue; }
 
     const img = images[0];
     let buf = null;
 
-    if (img.url) {
+    if (img.b64_json) {
+      buf = Buffer.from(img.b64_json, "base64");
+    } else if (img.url) {
       const resp = await fetch(img.url);
       if (resp.ok) buf = Buffer.from(await resp.arrayBuffer());
-    } else if (img.b64_json) {
-      buf = Buffer.from(img.b64_json, "base64");
     } else if (img.local_path) {
       const resp = await fetch(`${image2BaseUrl.replace(/\/+$/, "")}${img.local_path}`);
       if (resp.ok) buf = Buffer.from(await resp.arrayBuffer());
@@ -180,7 +179,6 @@ async function main() {
       success: true,
       path: outputPath,
       url: img.url || "",
-      revised_prompt: img.revised_prompt || "",
       attempts: attempt + 1,
     }));
     return;
