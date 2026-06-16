@@ -51,16 +51,19 @@ allowed-tools:
 
 ## Workflow
 
-### Phase 0: 读文件 + 风格沉淀 + 封面提醒
+### Phase 0: 读文件 + 去 AI 味提醒
 
 1. **读 `articles/{标题}_{日期}/final.md`**（用户改完的终稿）。
 2. 提取 frontmatter 的 `title`（作为 HTML 标题）
 3. 跳过候选段，取正文
-4. **风格沉淀**：按 [shared-references/style-precipitation.md](../../shared-references/style-precipitation.md) 检查是否有新改动
-   - 读 precipitation-log，取本文最近的 file_hash
-   - 算当前 final.md 的正文 hash
-   - hash 不同 → 做一轮新沉淀（diff → 识别 pattern → 去重写入 style_guide）
-   - hash 一致 → 跳过（无新改动）
+4. **去 AI 味提醒**：如果文章还没有跑过 humanize，排版前自动问一句
+
+```
+排版前要先"去 AI 味"吗？
+A) 去 AI 味 → 四层自检，修完再排版
+B) 直接排版 → 跳过
+```
+
 5. **封面提醒**：如果文章还没有做封面，排版前自动问一句
 
 ```
@@ -100,38 +103,16 @@ B) 直接排版 → 跳过
 2. 将排版生成的 HTML 原文嵌入 `<script type="text/plain" id="preload-content">` 标签内（替换 `<!-- CONTENT_PLACEHOLDER -->`）
 3. 写入 `articles/{标题}_{日期}/output-preview.html`
 
-### Phase 3: 完成 + 自动打开预览
-
-自检通过后自动打开预览页面：
-
-```bash
-# macOS
-open "articles/{标题}_{日期}/output-preview.html"
-
-# Windows
-start "" "articles/{标题}_{日期}/output-preview.html"
-
-# Linux
-xdg-open "articles/{标题}_{日期}/output-preview.html"
-```
-
-> 自动检测操作系统选择正确命令。打开后预览页面将自动加载排版内容——左侧源码，中间手机预览，右侧参数面板（宽度切换/深色模式/统计/快捷操作）。
-
-输出：
+### Phase 3: 完成
 
 ```
 ✅ 排版完成：articles/{标题}_{日期}/output.html
 主题：<自研名称>
 
 预览版：articles/{标题}_{日期}/output-preview.html
-（已自动打开 → 三栏布局：源码 | 手机预览 | 参数面板）
+（双击打开 → 手机预览 + 一键复制到公众号）
 
-在预览页面中可以：
-  · 左侧：查看/编辑 HTML 源码
-  · 中间：手机框实时预览效果
-  · 右侧：切换宽度 / 深色模式 / 查看统计 / 复制到公众号
-
-下一步：预览确认效果 → 复制 HTML → 粘贴公众号后台 → "启动预测"
+下一步：打开 -preview.html 预览效果 → 复制 HTML → 粘贴公众号后台 → "启动预测"
 ```
 
 ### Phase 4: 自检 — 逐项重读验证写入完整性

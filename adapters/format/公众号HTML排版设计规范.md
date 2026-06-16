@@ -1,8 +1,8 @@
-<!--
+﻿<!--
 ============================================================================
 微信公众号 HTML 排版设计规范 (DESIGN.md)
-Version: 1.0
-基于 4 篇真实公众号文章源码逆向分析
+Version: 1.1
+基于 4 篇真实公众号文章源码逆向分析 + 实际粘贴兼容性验证
 适用：AI Agent 生成公众号兼容 HTML
 ============================================================================
 -->
@@ -11,7 +11,46 @@ Version: 1.0
 
 ## 概述
 
-本规范定义了微信公众号文章 HTML 的完整语法规则。基于对 135 编辑器、秀米编辑器产出的真实公众号文章源码的逆向分析，确保 AI 按照此规范生成的 HTML 能够完整保留样式，通过 API 同步或编辑器粘贴到微信公众号。
+本规范定义了微信公众号文章 HTML 的完整语法规则。基于对 135 编辑器、秀米编辑器产出的真实公众号文章源码的逆向分析，以及实际粘贴到公众号后台的兼容性验证，确保 AI 按照此规范生成的 HTML 能够完整保留样式。
+
+---
+
+## 兼容性风险说明
+
+### 风险等级
+
+| 等级 | 含义 |
+|------|------|
+| ✅ **安全** | 在公众号编辑器中经过验证，可完整保留 |
+| ⚠️ **有风险** | 部分场景下可能被公众号编辑器过滤，建议备选方案 |
+| ❌ **不兼容** | 公众号编辑器不识别，会被直接丢弃 |
+
+### ⚠️ 高风险属性（易被公众号编辑器过滤）
+
+```diff
+- background: linear-gradient(...)   ← 渐变色最容易被丢弃
+- box-shadow                          ← 阴影经常丢失
+- text-shadow                         ← 文字阴影可能丢失
+- opacity                             ← 透明度可能丢失
+- transform: rotate/skew/translate    ← 变形几乎都会被丢弃
+- gap (flex 容器上的间距)              ← 部分 X5 内核不支持
+- <svg> 和 <foreignObject>            ← SVG 经常被编辑器过滤
+- background-image: url(...)          ← 外部图片链接不加载
+- !important                          ← 粘贴时可能被剥离
+```
+
+### 安全替代原则
+
+```
+高风险写法                → 安全替代
+──────────────────────────────────────────
+background: linear-gradient(...) → background-color: 纯色
+gap: 20px                 → 子元素 margin: 0 10px
+box-shadow                → border + 层级叠加（效果弱化需接受）
+transform                 → 不使用变形，用结构实现
+opacity                   → 用颜色 alpha 通道替代
+<svg>                     → 纯 HTML + emoji 替代
+```
 
 ---
 
@@ -40,15 +79,15 @@ Version: 1.0
 | `<span>` | 行内文字样式 | `<span style="color:#xxx">` |
 | `<strong>` | 加粗 | `<strong>文字</strong>` |
 | `<em>` | 斜体 | `<em>文字</em>` |
-| `<br>` | 换行 | `<br/>` |
+| `<br>` | 换行 | `<br>`（不要用自闭合 `<br/>`，某些编辑器不兼容） |
 
 ### 1.3 媒体标签
 
-| 标签 | 用途 |
-|------|------|
-| `<img>` | 图片（必须带 draggable="false"） |
-| `<svg>` | SVG 装饰 / 绝对定位容器 |
-| `<foreignObject>` | SVG 内嵌 HTML（仅用于绝对定位） |
+| 标签 | 用途 | 兼容性 |
+|------|------|--------|
+| `<img>` | 图片（必须带 draggable="false"） | ✅ |
+| ❌ `<svg>` | SVG 装饰 / 绝对定位容器 | ⚠️ 编辑器经常过滤，不建议使用 |
+| ❌ `<foreignObject>` | SVG 内嵌 HTML | ❌ 不兼容 |
 
 ### 1.4 禁止使用的标签
 
@@ -61,6 +100,7 @@ Version: 1.0
 ❌ <a>          — 公众号不支持外链
 ❌ <style>      — 必须 100% 内联样式
 ❌ <link>       — 禁止外部 CSS
+❌ <svg>        — 公众号编辑器会过滤，用 emoji 替代
 ```
 
 ---
@@ -75,6 +115,8 @@ max-width: 100% !important;
 ```
 
 **无例外**。这是公众号渲染引擎的硬性要求。
+
+> ⚠️ `!important` 在粘贴过程中可能被编辑器剥离。如果发现样式丢失，检查粘贴后的 HTML 源码中 `!important` 是否还在。如已丢失，需要在公众号后台手动补回。
 
 ### 2.2 `<p>` 标签强制初始化
 
@@ -94,906 +136,311 @@ p {
 ❌ <section class="xxx">
 ```
 
-
-
 ---
 
-## 第三部分：CSS 属性完整白名单
+## 第三部分：CSS 属性兼容性白名单
 
-以下属性已经在真实公众号文章中得到验证，**可以安全使用**。
+以下属性经过公众号编辑器实际粘贴验证。
+
+### 风险标记说明
+
+| 符号 | 含义 |
+|------|------|
+| ✅ | 安全，可放心使用 |
+| ⚠️ | 有风险，确认效果后再用 |
+| ❌ | 不兼容，建议避开 |
 
 ### 3.1 布局
 
-| 属性 | 常用值 | 说明 |
-|------|--------|------|
-| `display` | `flex`, `inline-block`, `block`, `grid` | flex 是主力 |
-| `flex-flow` | `row`, `column`, `row nowrap` | 控制主轴方向 |
-| `flex` | `0 0 auto`, `0 0 90%`, `100 100 0%`, `149.98 149.98 0%` | flex 简写，支持小数精确比例 |
-| `flex-shrink` | `0` | 防止收缩 |
-| `justify-content` | `center`, `flex-start`, `flex-end`, `space-between` | |
-| `align-items` | `center`, `flex-start`, `flex-end` | |
-| `align-self` | `flex-start`, `center`, `flex-end` | |
-| `grid-template-columns` | `100%` | SVG 绝对定位用 |
-| `grid-template-rows` | `100%` | SVG 绝对定位用 |
-| `grid-column-start` | `1` | |
-| `grid-row-start` | `1` | |
+| 兼容性 | 属性 | 常用值 | 说明 |
+|--------|------|--------|------|
+| ✅ | `display` | `flex`, `inline-block`, `block` | flex 是主力 |
+| ✅ | `flex-flow` | `row`, `column`, `row nowrap` | |
+| ✅ | `flex` | `0 0 auto`, `0 0 90%` | 避免复杂小数比例 |
+| ✅ | `flex-shrink` | `0` | |
+| ✅ | `justify-content` | `center`, `flex-start`, `space-between` | |
+| ✅ | `align-items` | `center`, `flex-start` | |
+| ⚠️ | `gap` | 任意值 | ⚠️ 部分 X5 内核不支持 flex gap。**安全替代**：改用子元素 `margin` |
+| ❌ | `grid` | 任意值 | ❌ 公众号不识别 CSS Grid |
+| ❌ | `grid-template-*` | 任意值 | ❌ |
 
 ### 3.2 盒模型
 
-| 属性 | 说明 |
-|------|------|
-| `width` | 百分比或 px，支持 `auto`、`1em` |
-| `height` | 百分比、px、`auto` 或 `max-content` |
-| `max-width` | **必须** `100% !important` |
-| `min-width` | 百分比，常用 `5%` 占位 |
-| `min-height` | 百分比或 px，用于清除浮动 |
-| `padding` | 四向或分向 |
-| `margin` | 支持负值（用于重叠/覆盖效果） |
-| `box-sizing` | **强制** `border-box` |
+| 兼容性 | 属性 | 说明 |
+|--------|------|------|
+| ✅ | `width` | 百分比或 px |
+| ✅ | `height` | 百分比、px、`auto` |
+| ✅ | `max-width` | **必须** `100% !important` |
+| ✅ | `min-width` | 百分比，常用 |
+| ✅ | `min-height` | 百分比或 px |
+| ✅ | `padding` | 四向或分向 |
+| ✅ | `margin` | 支持负值 |
+| ✅ | `box-sizing` | **强制** `border-box` |
 
 ### 3.3 文字
 
-| 属性 | 取值范围 | 说明 |
-|------|---------|------|
-| `font-size` | `3px` ~ `51px` | 正文以 14px 为基准 |
-| `line-height` | `0` ~ `3` | `0` 用于消除图片间隙 |
-| `letter-spacing` | `0px` ~ `5px` | |
-| `text-align` | `center`, `justify`, `left`, `right` | |
-| `color` | hex / rgb / rgba | |
-| `font-weight` | 通过 `<strong>` 或 `font-weight:bold` | |
-| `vertical-align` | `middle`, `top`, `bottom`, `baseline` | 消除行内间隙 |
-| `text-shadow` | 多阴影叠加 | 见 3.6 |
-| `word-break` | `break-word` | |
-| `font-family` | `-apple-system`, `'PingFang SC'`, `'Microsoft YaHei'`, `sans-serif`, `PingFangSC-ultralight` 等 | 非必须，设置系统字体栈常见 |
+| 兼容性 | 属性 | 取值范围 | 说明 |
+|--------|------|---------|------|
+| ✅ | `font-size` | `3px` ~ `51px` | 正文以 14px 为基准 |
+| ✅ | `line-height` | `1` ~ `3` | 正文建议 1.85。**避免 `line-height:0`**，可能导致文字重叠 |
+| ✅ | `letter-spacing` | `0px` ~ `5px` | |
+| ✅ | `text-align` | `center`, `justify`, `left` | |
+| ✅ | `color` | hex / rgb | ✅ 推荐使用 hex（如 `#333`），`rgba()` 部分情况会被转换 |
+| ✅ | `font-weight` | `bold`, `600`, `700` | |
+| ✅ | `vertical-align` | `middle`, `top` | 消除行内间隙 |
+| ⚠️ | `text-shadow` | 任意值 | ⚠️ 公众号编辑器可能过滤，仅在简单场景有效 |
+| ❌ | `opacity` | 任意值 | ❌ 经常被丢弃。**替代**：用 `rgba(0,0,0,0.x)` 替代 |
+| ✅ | `font-family` | 系统字体栈 | 建议：`-apple-system,'PingFang SC','Microsoft YaHei',sans-serif` |
 
 ### 3.4 背景
 
-| 属性 | 示例 |
-|------|------|
-| `background-color` | `#ffffff`, `rgba(0,0,0,0)`, `rgb(247,247,247)` |
-| `background` | `linear-gradient(90deg, #color1 0%, #color2 86%)` |
-| `background-image` | `url(...)`、`linear-gradient(...)`、SVG 图标 |
-| `background-position` | `50% 50%`、`0% 0%`、`left top` |
-| `background-size` | `cover`、`auto`、`contain`、百分比 `69.1974% !important`、`auto 176.923% !important` |
-| `background-repeat` | `no-repeat`、`repeat`、`repeat-x`、`repeat-y` |
-| `background-attachment` | `scroll`（默认） |
-
-**注意**：`background-size` 支持精确百分比值（135 编辑器常用），必须带 `!important`。
-
-**渐变支持完好**。方向语法：
-- `to right` / `to left` / `to top` / `to bottom`
-- `90deg` / `200deg` 等角度
-- 多色停止点 `#c1 0%, #c2 50%, #c3 100%`
-- rgba 透明度渐变 `rgba(124,153,18,0.93) 0%, rgba(230,246,221,0) 86%`
+| 兼容性 | 属性 | 说明 |
+|--------|------|------|
+| ✅ | `background-color` | **推荐！** 这是最安全的背景方式 |
+| ⚠️ | `background` | 简写属性。如果内容包含 `linear-gradient` 则被过滤的风险很高 |
+| ❌ | `background: linear-gradient(...)` | ❌ **最常见的不兼容原因**。粘贴到公众号后台后渐变色几乎都会被丢弃。**替代**：使用纯色 `background-color` |
+| ❌ | `background-image` | ❌ 外部图片 URL 不加载 |
 
 ### 3.5 边框
 
-| 属性 | 示例 |
-|------|------|
-| `border` | `1px solid #000` |
-| `border-left/right/top/bottom` | 分侧设置 |
-| `border-width` | 分侧宽度 |
-| `border-style` | `solid`, `none`, `dashed` |
-| `border-color` | hex / rgb / rgba |
-| `border-radius` | `50px`, `99px`, `200px`, `30px`, `10px`, `100%` |
-| `border-top-right-radius` | 单独控制各角圆角 |
-| `border-bottom-right-radius` | 单独控制各角圆角 |
-| `border-top-left-radius` | 单独控制各角圆角 |
-| `border-bottom-left-radius` | 单独控制各角圆角 |
-| `overflow` | `hidden`（配合 border-radius 裁剪）、`visible` |
+| 兼容性 | 属性 | 说明 |
+|--------|------|------|
+| ✅ | `border` | `1px solid #xxx` |
+| ✅ | `border-left/right/top/bottom` | 单侧边框 |
+| ✅ | `border-radius` | 圆角支持良好 |
+| ⚠️ | `box-shadow` | ⚠️ 阴影可能丢失，**替代**：用 `border` 叠加模拟 |
 
-**CSS 三角形技法**：
-```css
-width: 0px; height: 0px;
-border-left: 9px solid transparent;
-border-right: 9px solid transparent;
-border-top: 10px solid #583f37;
-```
+### 3.6 特效
 
-### 3.6 阴影
-
-**注意**：`box-shadow` 在移动端微信环境下可能不显示，**桌面端预览正常**。如需使用，建议配合半透明背景或 `rgba()` 色值降低风险。
-
-**`box-shadow` 已验证可用**（来自秀米/135编辑器源码）：
-```css
-box-shadow: rgba(0,0,0,0.15) 1px 1px 10px 0px;
-```
-
-| 属性 | 示例 |
-|------|------|
-| `box-shadow` | `rgba(0,0,0,0.15) 1px 1px 10px 0px` |
-
-**文字描边效果**（text-shadow 多阴影模拟）：
-```css
-text-shadow: #color 0em 0.035em 0em,
-             #color 0.035em 0em 0em,
-             #color 0em -0.035em 0em,
-             #color -0.035em 0em 0em,
-             #color 0.035em 0.035em 0em,
-             #color -0.035em -0.035em 0em,
-             #color 0.035em -0.035em 0em,
-             #color -0.035em 0.035em 0em;
-```
-
-**使用场景**：大号数字、标题文字描边。
-
-### 3.7 Transform（必须带 4 个厂商前缀）
-
-```css
-transform: rotate(0deg);
--webkit-transform: rotate(0deg);
--moz-transform: rotate(0deg);
--o-transform: rotate(0deg);
-```
-
-**已验证的 transform 函数**：
-- `rotate(Xdeg)` — 旋转
-- `rotateZ(Xdeg)` — 3D 旋转
-- `rotateX(180deg)` / `rotateY(180deg)` — 翻转
-- `translate3d(Xpx, Ypx, 0px)` — 3D 位移
-- `translateX(Xpx)` — 水平位移
-- `scale(1)` — 缩放
-- `skew(Xdeg)` — 倾斜（135 编辑器用）
-
-### 3.8 其他
-
-| 属性 | 说明 |
-|------|------|
-| `opacity` | 透明度（源码中使用 rgba 代替，但也支持直接使用） |
-| `z-index` | `1` ~ `7`，配合 SVG 绝对定位 |
-| `position` | 仅 `static` |
-| `overflow` | `hidden`（裁剪）, `visible`（SVG内） |
-| `pointer-events` | `none`（图片装饰） |
-| `user-select` | `none`（SVG内） |
-| `-webkit-tap-highlight-color` | `transparent`（SVG内） |
-| `float` | `left`（SVG spacer 元素） |
-| `clear` | `both` |
-
-### 3.9 禁止使用的 CSS
-
-```
-❌ position: relative/absolute/fixed/sticky
-❌ animation / @keyframes / transition
-❌ backdrop-filter
-❌ clip-path
-❌ filter (blur等用 transform 替代)
-❌ calc()
-❌ vw / vh / rem / clamp()
-❌ css variables (var(--xxx))
-❌ @media queries (公众号自动处理响应式)
-```
+| 兼容性 | 属性 | 说明 |
+|--------|------|------|
+| ⚠️ | `text-shadow` | ⚠️ 文字阴影可能被过滤 |
+| ❌ | `transform` | ❌ `rotate/skew/translate` 均不兼容 |
+| ❌ | `opacity` | ❌ 不兼容。**替代**：用 `rgba(#xxx, alpha)` |
+| ✅ | `z-index` | `1` ~ `7` 支持 |
 
 ---
 
-## 第四部分：布局模式
+## 第四部分：安全布局模式
 
-### 4.1 Flex 横向布局（最常用）
+### 4.1 Flex 行布局（推荐）
 
 ```html
-<section style="display:flex;flex-flow:row;justify-content:center;align-items:center;box-sizing:border-box;">
-  <section style="display:inline-block;flex:0 0 auto;vertical-align:middle;box-sizing:border-box;max-width:100%!important;">
-    左列
-  </section>
-  <section style="display:inline-block;flex:0 0 auto;vertical-align:middle;box-sizing:border-box;max-width:100%!important;">
-    右列
-  </section>
+<!-- ✅ 安全：外层 display:flex，子元素用 margin 替代 gap -->
+<section style="display:flex;flex-flow:row;justify-content:center;box-sizing:border-box;max-width:100%!important">
+  <section style="margin:0 5px;box-sizing:border-box;max-width:100%!important">元素1</section>
+  <section style="margin:0 5px;box-sizing:border-box;max-width:100%!important">元素2</section>
 </section>
 ```
 
-### 4.2 Flex 纵向布局
+### 4.2 Flex 列布局
 
 ```html
-<section style="display:flex;flex-flow:column;box-sizing:border-box;">
-  <section style="box-sizing:border-box;max-width:100%!important;">第一行</section>
-  <section style="box-sizing:border-box;max-width:100%!important;">第二行</section>
+<section style="display:flex;flex-flow:column;align-items:center;box-sizing:border-box;max-width:100%!important">
+  <section style="margin:6px 0;box-sizing:border-box;max-width:100%!important">上</section>
+  <section style="margin:6px 0;box-sizing:border-box;max-width:100%!important">下</section>
 </section>
 ```
 
-### 4.3 左右分栏
+### 4.3 图片容器
 
 ```html
-<section style="display:flex;flex-flow:row;box-sizing:border-box;">
-  <section style="display:inline-block;flex:0 0 45%;box-sizing:border-box;max-width:45%!important;">
-    左侧内容
-  </section>
-  <section style="display:inline-block;flex:0 0 5%;box-sizing:border-box;max-width:5%!important;"></section>
-  <section style="display:inline-block;flex:0 0 50%;box-sizing:border-box;max-width:50%!important;">
-    右侧内容
-  </section>
-</section>
-```
-
-### 4.4 Grid 绝对定位叠加
-
-```html
-<section style="display:grid;grid-template-columns:100%;grid-template-rows:100%;box-sizing:border-box;">
-  <!-- 底层：占位维持宽高比 -->
-  <section style="grid-column-start:1;grid-row-start:1;padding-top:133.33%;box-sizing:border-box;">
-    <svg viewbox="0 0 1 1" style="float:left;line-height:0;width:0;vertical-align:top;box-sizing:border-box;"></svg>
-  </section>
-  <!-- 叠加层 1 -->
-  <section style="width:60%;margin-top:20%;margin-left:20%;grid-column-start:1;grid-row-start:1;box-sizing:border-box;max-width:60%!important;">
-    叠加文字
-  </section>
-  <!-- 叠加层 2 -->
-  <section style="width:80%;margin-top:50%;margin-left:10%;grid-column-start:1;grid-row-start:1;box-sizing:border-box;max-width:80%!important;">
-    更多叠加内容
-  </section>
-</section>
-```
-
-**说明**：所有子 section 占据同一网格单元格（row 1, col 1），通过百分比 `margin-top` 和 `margin-left` 定位，`padding-top` 控制宽高比。
-
-### 4.5 SVG foreignObject 绝对定位（135 编辑器技法）
-
-```html
-<section style="display:grid;grid-template-columns:100%;grid-template-rows:100%;overflow:hidden;box-sizing:border-box;">
-  <!-- 宽高比 SVG -->
-  <section style="grid-column-start:1;grid-row-start:1;height:100%;line-height:0;box-sizing:border-box;">
-    <svg viewbox="0 0 375 530" style="max-width:100%!important;pointer-events:none;display:inline-block;width:100%;box-sizing:border-box;"></svg>
-  </section>
-  <!-- 内容块 1 -->
-  <section style="width:100%;margin-top:0%;margin-left:0%;grid-column-start:1;grid-row-start:1;height:max-content;z-index:1;box-sizing:border-box;max-width:100%!important;transform:scale(1);-webkit-transform:scale(1);-moz-transform:scale(1);-o-transform:scale(1);">
-    <svg style="max-width:100%!important;display:inline-block;width:100%;line-height:1.6;overflow:visible;box-sizing:border-box;" viewbox="0 0 375 100">
-      <foreignObject width="100%" height="100%">
-        <section style="box-sizing:border-box;">
-          <!-- 此处放正常 HTML -->
-          <p style="text-align:center;font-size:16px;color:#fff;margin:0px;">文字内容</p>
-        </section>
-      </foreignObject>
-    </svg>
-  </section>
-</section>
-```
-
-**注意**：`viewbox`（小写）是 135 编辑器的写法，`viewBox`（驼峰）是标准写法，两者均可。
-
----
-
-## 第五部分：组件配方
-
-### 5.1 文章头部
-
-```html
-<!-- 标题区域 -->
-<section style="text-align:center;padding:28px 0 18px;box-sizing:border-box;">
-  <!-- 可选：标签徽章 -->
-  <section style="display:inline-block;padding:3px 12px;background:#primary;color:#fff;font-size:9px;font-weight:bold;letter-spacing:2px;box-sizing:border-box;">标签</section>
-  <p style="font-size:22px;font-weight:bold;color:#1a1a1a;letter-spacing:1px;line-height:1.4;margin:8px 0 0;box-sizing:border-box;">文章标题</p>
-  <p style="font-size:11px;color:#999;margin:6px 0 0;box-sizing:border-box;">副标题</p>
-</section>
-```
-
-### 5.2 章节标题
-
-```html
-<section style="margin:32px 0 12px;display:flex;align-items:flex-start;gap:8px;box-sizing:border-box;">
-  <!-- 左边框装饰 -->
-  <section style="width:3px;height:18px;background:#primary;flex-shrink:0;box-sizing:border-box;"></section>
-  <!-- 标题文字 -->
-  <section style="flex:1;box-sizing:border-box;">
-    <p style="font-size:10px;font-weight:bold;color:#accent;letter-spacing:2px;margin:0 0 2px;">SECTION 01</p>
-    <p style="font-size:16px;font-weight:bold;color:#1a1a1a;margin:0;">章节标题</p>
-  </section>
-</section>
-```
-
-### 5.3 正文段落
-
-```html
-<p style="margin:8px 0;text-align:justify;font-size:14px;color:#333;line-height:1.85;letter-spacing:0.3px;box-sizing:border-box;">
-  正文内容...
-</p>
-```
-
-### 5.4 强调卡片
-
-```html
-<section style="margin:20px 0;padding:16px;background:linear-gradient(135deg,#f6f9fc,#f0f4f8);border-left:4px solid #primary;box-sizing:border-box;">
-  <section style="display:inline-block;padding:2px 10px;background:#primary;color:#fff;font-size:9px;font-weight:bold;letter-spacing:2px;margin-bottom:6px;box-sizing:border-box;">重点</section>
-  <p style="font-size:15px;font-weight:bold;color:#1a1a1a;margin:4px 0;">核心结论</p>
-  <p style="font-size:13px;color:#555;line-height:1.8;margin:4px 0 0;">详细说明文字...</p>
-</section>
-```
-
-### 5.5 引用/金句
-
-```html
-<section style="margin:20px 0;padding:16px;text-align:center;background:#fafafa;box-sizing:border-box;">
-  <p style="font-size:15px;font-weight:bold;color:#accent;line-height:1.9;letter-spacing:0.5px;margin:0;">
-    金句内容...
-  </p>
-</section>
-```
-
-### 5.6 数据展示（三列）
-
-```html
-<section style="display:flex;flex-flow:row;justify-content:space-around;margin:20px 0;box-sizing:border-box;">
-  <section style="display:inline-block;flex:0 0 30%;text-align:center;padding:16px 8px;background:#surface2;box-sizing:border-box;max-width:30%!important;">
-    <p style="font-size:28px;font-weight:bold;color:#primary;margin:0;line-height:1.2;">100万亿</p>
-    <p style="font-size:10px;color:#999;margin:4px 0 0;">标签</p>
-  </section>
-  <!-- 重复 2 次 -->
-</section>
-```
-
-### 5.7 步骤流（横向）
-
-```html
-<section style="margin:20px 0;padding:16px;background:#surface2;box-sizing:border-box;">
-  <section style="display:flex;flex-flow:row;justify-content:space-around;box-sizing:border-box;">
-    <section style="display:inline-block;flex:0 0 auto;text-align:center;padding:8px;box-sizing:border-box;">
-      <section style="display:inline-block;width:28px;height:28px;line-height:28px;background:#primary;color:#fff;font-size:11px;font-weight:bold;text-align:center;margin-bottom:6px;box-sizing:border-box;">1</section>
-      <p style="font-size:12px;font-weight:bold;color:#1a1a1a;margin:0;">步骤名</p>
-      <p style="font-size:10px;color:#999;margin:2px 0 0;">步骤描述</p>
-    </section>
-    <!-- 重复 -->
-  </section>
-</section>
-```
-
-### 5.8 步骤流（纵向）
-
-```html
-<section style="margin:20px 0;padding:16px;background:#surface2;box-sizing:border-box;">
-  <section style="display:flex;flex-flow:column;gap:8px;box-sizing:border-box;">
-    <section style="display:flex;flex-flow:row;align-items:flex-start;gap:8px;box-sizing:border-box;">
-      <section style="width:28px;height:28px;line-height:28px;background:#primary;color:#fff;font-size:11px;font-weight:bold;text-align:center;flex-shrink:0;box-sizing:border-box;">1</section>
-      <section style="flex:1;box-sizing:border-box;">
-        <p style="font-size:13px;font-weight:bold;color:#1a1a1a;margin:0;">步骤标题</p>
-        <p style="font-size:11px;color:#888;margin:2px 0 0;">详细描述</p>
-      </section>
-    </section>
-    <!-- 重复 -->
-  </section>
-</section>
-```
-
-### 5.9 标签徽章
-
-```html
-<section style="display:flex;flex-flow:row;justify-content:center;flex-wrap:wrap;gap:6px;margin:12px 0;box-sizing:border-box;">
-  <section style="display:inline-block;padding:4px 12px;background:#primary;color:#fff;font-size:10px;font-weight:bold;box-sizing:border-box;">标签1</section>
-  <section style="display:inline-block;padding:4px 12px;background:#accent2;color:#fff;font-size:10px;font-weight:bold;box-sizing:border-box;">标签2</section>
-</section>
-```
-
-### 5.10 提示块
-
-```html
-<section style="margin:16px 0;padding:12px 16px;background:#surface2;border-left:3px solid #accent;box-sizing:border-box;">
-  <p style="font-size:13px;color:#555;line-height:1.8;margin:0;">
-    <strong style="color:#accent;">TIP</strong> 提示内容...
-  </p>
-</section>
-```
-
-### 5.11 CTA 按钮
-
-```html
-<section style="margin:28px 0;padding:22px 16px;text-align:center;background:linear-gradient(135deg,#surface2,#surface3);box-sizing:border-box;">
-  <p style="font-size:9px;font-weight:bold;color:#accent;letter-spacing:2px;margin:0 0 4px;">CTA LABEL</p>
-  <p style="font-size:15px;font-weight:bold;color:#1a1a1a;margin:0 0 12px;">标题文字</p>
-  <section style="display:inline-block;padding:10px 28px;background:#primary;color:#fff;font-size:13px;font-weight:bold;letter-spacing:1px;box-sizing:border-box;">按钮文字</section>
-</section>
-```
-
-### 5.12 分割线
-
-```html
-<p style="text-align:center;margin:24px 0;font-size:13px;color:#ddd;letter-spacing:6px;box-sizing:border-box;">· · ·</p>
-```
-
-### 5.13 图片
-
-**支持的图片格式**：JPG、PNG、GIF、SVG（通过 `<img>` 标签或 `background-image: url()`）
-
-**常用图片属性**：`_width="100%"`、`data-s="300,640"`、`data-ratio="0.666"`、`data-w="1080"`（秀米/135编辑器兼容属性）
-
-```html
-<!-- 标准图片（带 editor 属性） -->
-<section style="text-align:center;margin:12px 0;box-sizing:border-box;">
-  <img class="raw-image" style="width:100%;display:block;vertical-align:middle;box-sizing:border-box;max-width:100%!important;" src="https://..." draggable="false" _width="100%" data-s="300,640" data-ratio="0.666" data-w="1080"/>
-</section>
-
-<!-- SVG 图标图片 -->
-<section style="max-width:100%;vertical-align:middle;display:inline-block;line-height:0;width:30%;height:auto;box-sizing:border-box;">
-  <img src="https://..." style="vertical-align:middle;width:100%;height:100%;box-sizing:border-box;max-width:100%!important;"/>
-</section>
-
-<!-- 限高滚动图片 -->
-<section style="text-align:center;margin:12px 0;overflow:hidden;height:250px;box-sizing:border-box;">
-  <img style="width:100%;display:block;box-sizing:border-box;max-width:100%!important;" src="https://..." draggable="false"/>
-</section>
-
-<!-- 多图横向滚动 -->
-<section style="margin:12px 0;overflow-x:auto;box-sizing:border-box;">
-  <section style="display:flex;flex-flow:row;box-sizing:border-box;">
-    <section style="flex-shrink:0;width:200px;padding:4px;box-sizing:border-box;">
-      <img style="width:100%;display:block;box-sizing:border-box;max-width:100%!important;" src="https://..." draggable="false"/>
-    </section>
-    <!-- 重复多张 -->
-  </section>
-</section>
-```
-
-### 5.14 文章头部信息卡（推荐）
-
-每篇文章开头使用。包含标签/话题、字数、阅读时间、一句话概括。
-
-```html
-<section style="margin:20px 0 28px;padding:20px 16px;background:linear-gradient(135deg,#surface2,#surface3);box-sizing:border-box;max-width:100%!important;">
-  <!-- 标签行 -->
-  <section style="display:flex;flex-flow:row;flex-wrap:wrap;gap:6px;margin-bottom:10px;box-sizing:border-box;max-width:100%!important;">
-    <section style="display:inline-block;padding:3px 10px;background:#accent;color:#fff;font-size:8px;font-weight:bold;letter-spacing:1.5px;box-sizing:border-box;max-width:100%!important;">标签1</section>
-    <section style="display:inline-block;padding:3px 10px;background:rgba(0,0,0,0.06);color:#mute;font-size:8px;letter-spacing:1px;box-sizing:border-box;max-width:100%!important;">标签2</section>
-  </section>
-  <!-- 元信息 -->
-  <section style="display:flex;flex-flow:row;gap:16px;margin-bottom:6px;box-sizing:border-box;max-width:100%!important;">
-    <p style="font-size:9px;color:#mute;margin:0;box-sizing:border-box;max-width:100%!important;">📄 约 X 字</p>
-    <p style="font-size:9px;color:#mute;margin:0;box-sizing:border-box;max-width:100%!important;">⏱ 阅读 X 分钟</p>
-  </section>
-  <!-- 概括句 -->
-  <p style="font-size:12px;color:#ink;line-height:1.7;margin:8px 0 0;box-sizing:border-box;max-width:100%!important;">一句话概括全文的核心观点或核心冲突。</p>
-</section>
-```
-
-### 5.15 文章结尾互动卡（推荐）
-
-每篇文章结尾使用。引导点赞、在看、收藏、转发。
-
-```html
-<section style="margin:36px 0 24px;padding:24px 16px;text-align:center;background:linear-gradient(135deg,#surface2,#surface3);box-sizing:border-box;max-width:100%!important;">
-  <p style="font-size:10px;font-weight:bold;color:#accent;letter-spacing:2px;margin:0 0 4px;box-sizing:border-box;max-width:100%!important;">— THE END —</p>
-  <p style="font-size:13px;font-weight:bold;color:#ink;margin:8px 0 4px;box-sizing:border-box;max-width:100%!important;">如果觉得有用</p>
-  <section style="display:flex;flex-flow:row;justify-content:center;gap:10px;margin:10px 0 0;box-sizing:border-box;max-width:100%!important;">
-    <section style="display:inline-block;padding:8px 16px;background:#primary;color:#fff;font-size:10px;font-weight:bold;letter-spacing:1px;box-sizing:border-box;max-width:100%!important;">👍 点个赞</section>
-    <section style="display:inline-block;padding:8px 16px;background:#accent;color:#fff;font-size:10px;font-weight:bold;letter-spacing:1px;box-sizing:border-box;max-width:100%!important;">⭐ 在看</section>
-    <section style="display:inline-block;padding:8px 16px;background:#surface3;color:#ink;font-size:10px;font-weight:bold;letter-spacing:1px;border:1px solid #border;box-sizing:border-box;max-width:100%!important;">🔗 转发</section>
-  </section>
-  <p style="font-size:9px;color:#mute;margin:10px 0 0;box-sizing:border-box;max-width:100%!important;">谢谢你看我的文章，我们下篇再见。</p>
-</section>
-```
-
-### 5.16 字体比例参考
-
-正文基准 14px，其他元素按比例缩放：
-
-| 元素 | 字号 | 说明 |
-|---|---|---|
-| 标题 | 19-20px | 文章主标题 |
-| 副标题 | 12-13px | 标题下方副文 |
-| 章节标题 | 16px | 带装饰条的分段标题 |
-| 正文 | **14px** | 基准 |
-| 强调/突出 | **15-16px** | 金句、核心观点 |
-| 卡片内文 | 13px | 信息卡、引用卡内文字 |
-| 标签/角标 | 8-9px | 徽章、标签、字母标记 |
-| 底部文字 | 10px | 版权、来源等 |
-| 分割线装饰 | 12-13px | 点点点分隔 |
-
-### 5.17 主题案例
-
-以下 6 个完整主题案例展示规范的上限——从极简到张扬，从温暖到冷峻。
-
----
-
-#### 🟫 案例 1：赤墨（Red Ink）— 东方书法 × 现代排版
-
-```
-色板：  ink #1a0f0c（浓墨）  accent #c23a2e（朱砂）
-        surface #faf7f4（宣纸）  body #3d302c  mute #9c8880
-        card #f3ede6（旧纸黄）  line #e0d5c8
-```
-
-**设计特征**：竖向装饰线替代横向分隔、标题用 serif 字重对比、引用段左边 3px 朱砂竖线、卡片底色偏暖黄像旧书页。所有设计元素围绕"一本书的阅读体验"展开。
-
----
-
-#### 🟦 案例 2：深海（Abyss）— 暗黑 × 荧光 × 沉浸
-
-```
-色板：  ink #e8f0ff（白字）  accent #00e5ff（电光青）
-        surface #060d17（深海黑）  body #b0c0d8  mute #5a6a80
-        card #0d1525（微亮黑）  line rgba(0,229,255,0.15)
-```
-
-**设计特征**：全暗底、电光青是唯一光源。信息卡用极微弱蓝调背景区分层次，分割线用半透明青线。强调文字用青字+0.5px 青文字阴影模拟荧光。适合科技/深度/沉浸感文章。
-
----
-
-#### 🟩 案例 3：苔原（Tundra）— 北欧极简 × 自然治愈
-
-```
-色板：  ink #1d2a1d（森林黑）  accent #7cb342（苔绿）
-        surface #f9fbf7（晨露白）  body #3a4638  mute #889a80
-        card #f0f4ec（薄雾绿）  line #dde4d8
-```
-
-**设计特征**：一切从简。只用一种绿色，不同灰度完成层次。圆角普遍 4-6px，比默认更圆润柔和。卡片带极轻微绿色背景几乎看不出来。适合生活/治愈/慢生活类文章。
-
----
-
-#### 🟪 案例 4：紫调（Violet Hour）— 渐变 × 梦幻 × 文艺
-
-```
-色板：  ink #1a1530（深紫黑）  accent #8b5cf6（电紫）
-        accent2 #f472b6（粉玫红）
-        surface #faf8ff（淡紫白）  body #3d3558  mute #9088a8
-        card #f3f0fc（薰衣草灰）  line #ddd8f0
-```
-
-**设计特征**：双强调色——紫用于结构（标题/分隔/按钮），粉玫红用于情绪（金句/引用/互动）。渐变只出现在按钮和分隔线。卡片带极淡的紫色底色。适合文艺/情感/女性向内容。
-
----
-
-#### 🟧 案例 5：暖橙（Ember）— 大地色 × 温暖 × 手作感
-
-```
-色板：  ink #2c1810（可可黑）  accent #e8873a（陶土橙）
-        surface #fdf9f3（奶油白）  body #4a3530  mute #a08878
-        card #f8efe0（亚麻色）  line #e8d5c0
-```
-
-**设计特征**：全暖色调，无冷色。信息卡背景用亚麻色（偏黄灰），强调文字用陶土橙而非正红。按钮背景用可可黑配白字，形成温暖但不轻浮的对比。适合美食/手作/旅行/生活记录。
-
----
-
-#### ⬜ 案例 6：素白（Bare）— 纯白 × 单黑 × 极致克制
-
-```
-色板：  ink #000000（纯黑）  accent #000000（无第二色）
-        surface #ffffff（纯白）  body #000000  mute #999999
-        card #f5f5f5（5%灰）  line #e5e5e5
-```
-
-**设计特征**：全篇只有黑白灰。无彩色，无渐变，连强调文字都是黑色加粗。层次全靠灰度和留白。信息卡用 5%浅灰底，分割线用 10%灰线。按钮用黑底白字 vs 白底黑字对比。所有圆角为 0。适合极简主义者/哲学/诗歌/高级感内容。
-
----
-
-#### 🌸 案例 7：粉红 Zine — 大胆 × 杂志感 × 不正经但认真
-
-```
-色板：  ink #18181b（浓黑）  accent #ec4899（粉红）
-        accent2 #facc15（明黄）
-        surface #faf6f2（米白）  body #334155  mute #71717a
-        card #ffffff（白卡）  line #d4d4d8
-        highlight #fce7f3（粉底编号）  urgent #18181b（黑底黄字）
-```
-
-**设计特征**：像一本印刷杂志的头版。超大号透明粉色章节编号（01-10）作为背景元素铺在标题左上方。旋转标签（粉色/黄色/黑色）打破规整感。主标题用极紧字距（-0.06em）加黑体加粗。黄色高亮块作为标题下的"标记线"。底部用黑色底板 + 旋转的粉色小标签。信息卡用彩色边框 + 阴影模拟贴纸。金句用粉底白字荧光笔块。数据用三栏彩色高亮数字卡。pull quote 上下粉色边框居中斜体。按钮用黑底白字或粉底白字。分隔符用 `. . .` 三点虚线。适合轻松/有态度/推荐类/白嫖信息类内容。
-
-## 第六部分：色彩系统
-
-### 6.1 颜色值格式
-
-```
-✅ #hex      — #ffffff, #333, #e5e7eb
-✅ rgb()     — rgb(247, 247, 247), rgb(0, 0, 0)
-✅ rgba()    — rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.93)
-❌ hsl()     — 不支持
-❌ oklch()   — 不支持
-❌ color()   — 不支持
-```
-
-### 6.2 推荐的语义色板
-
-```yaml
-主题色 (primary):    用于按钮、重点标记、活跃状态
-强调色 (accent):     用于加粗文字、引用、步骤编号
-背景色 (surface):    文章底色
-次背景 (surface2):   卡片底色
-边框色 (border):     分割线、卡片描边
-正文色 (ink):        主要文字
-弱色 (mute):         副文字、标签
-```
-
-### 6.3 九套示例主题
-
-#### 🌸 可爱手帐
-```
-primary: #ff9aa2    accent: #e88a7a
-surface: #fffefb    s2: #fffef9    s3: #fff5f5
-border: #f0e8d8     ink: #4a3830
-mute: #c0b0a0       body: #5a4e42
-```
-
-#### 💳 Stripe 金融
-```
-primary: #533afd    accent: #ff00d4
-surface: #ffffff    s2: #f6f9fc    s3: #fff5f7
-border: #e6ebf0     ink: #0d253d
-mute: #7a8a9a       body: #3c4257
-```
-
-#### ⬛ Vercel 极客
-```
-primary: #171717    accent: #50e3c2
-surface: #ffffff    s2: #fafafa    s3: #f5f5f5
-border: #ebebeb     ink: #171717
-mute: #888888       body: #4d4d4d
-```
-
-#### 🍎 Apple 极简
-```
-primary: #0066cc    accent: #0066cc
-surface: #ffffff    s2: #f5f5f7    s3: #fafafc
-border: #e0e0e0     ink: #1d1d1f
-mute: #7a7a7a       body: #1d1d1f
-```
-
-#### 🖌 新中式水墨
-```
-primary: #8b4513    accent: #8b4513
-surface: #fbf9f6    s2: #f8f5ef
-border: rgba(139,69,19,0.12)  ink: #2c1f0e
-mute: #b0a090       body: #3a3631
-```
-
-#### 💜 赛博霓虹
-```
-primary: #00c8ff    accent: #ff00ff
-surface: #0c0c14    s2: rgba(0,200,255,0.04)  s3: rgba(255,0,255,0.04)
-border: rgba(0,200,255,0.1)  ink: #e0f0ff
-mute: #5a6a8a       body: #b8c4d4
-```
-
-#### 🍃 日系侘寂
-```
-primary: #5a6842    accent: #a0b088
-surface: #fafbf8    s2: #f5f6f1    s3: rgba(160,176,136,0.1)
-border: #e0e4da     ink: #3a4832
-mute: #a0a898       body: #4a5048
-```
-
-#### 📰 报刊社论
-```
-primary: #c44       accent: #c44
-surface: #fefcf7    s2: #faf7f0    s3: rgba(204,68,68,0.03)
-border: #d0c8b8     ink: #2a2218
-mute: #999          body: #2a2218
-```
-
-#### ⬜ 极简黑白
-```
-primary: #000       accent: #000
-surface: #ffffff    s2: #fafafa    s3: #f0f0f0
-border: #e0e0e0     ink: #1a1a1a
-mute: #888          body: #1a1a1a
-```
-
-#### 🌸 粉红 Zine
-```
-primary: #ec4899    accent: #facc15
-surface: #faf6f2    s2: #fdf2f8    s3: #fef9c3
-border: #d4d4d8     ink: #18181b
-mute: #71717a       body: #334155
-```
-
----
-
-## 第七部分：排版尺度
-
-### 7.1 字号层级（基准 14px）
-
-| 层级 | 字号 | 用途 |
-|------|------|------|
-| 文章标题 | 21-24px | 文首大标题 |
-| 章节标题 | 15-17px | 一级分段标题 |
-| 卡片标题 | 15px | 强调卡片标题 |
-| **正文** | **14px** | **基准正文** |
-| 引用文字 | 13-15px | 金句/引用 |
-| 辅助说明 | 12-13px | 卡片正文、步骤描述 |
-| 小标签 | 9-10px | 徽章、日期、编号 |
-| 微型文字 | 9px | badge、label |
-
-### 7.2 行高与字间距
-
-| 场景 | line-height | letter-spacing |
-|------|------------|----------------|
-| 正文段落 | 1.85 | 0.3px |
-| 标题 | 1.3-1.4 | 0.5-1px |
-| 引用 | 1.8-1.9 | 0.5px |
-| 标签/badge | — | 2px |
-
-### 7.3 间距
-
-| 层级 | margin | 用途 |
-|------|--------|------|
-| 章节间隔 | 32px 上 | 章节标题上方 |
-| 卡片间隔 | 20-24px 上下 | 组件之间 |
-| 段落间隔 | 8-10px 上下 | 正文段落 |
-| 元素内边距 | 12-20px | 卡片、框内 |
-
----
-
-## 第八部分：Do's 和 Don'ts
-
-### ✅ 必须做
-
-1. 每个元素写 `style="box-sizing:border-box;"`
-2. 每个块级元素写 `max-width:100%!important;`
-3. `<p>` 标签写 `margin:0px;padding:0px;`
-4. 所有 transform 带 4 个厂商前缀
-5. 图片使用 `display:block;` 消除底部空隙
-6. 容器之间用 `vertical-align:middle;` 或 `top` 对齐
-7. flex 子元素写 `flex:0 0 auto;`
-
-### ❌ 禁止做
-
-1. 使用 `<div>` — 永远用 `<section>`
-2. 使用 `<style>` 标签 — 100% 内联样式
-3. 使用 `position:absolute/fixed/relative`
-4. 使用 `animation` / `transition` / `@keyframes`
-5. 使用 `vw` / `vh` / `rem` / `calc()` / `var()`
-6. 使用外部 CSS 文件
-7. transform 只写标准属性不写前缀
-8. 图片不写 `display:block;` 导致底部有缝隙
-9. 用 `<table>` 做布局 — 用 flex
-
----
-
-## 第九部分：文章完整结构模板
-
-```html
-<section style="width:100%;max-width:677px;background:transparent;padding:0 8px 24px;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;font-size:14px;line-height:1.85;color:#body;letter-spacing:0.3px;box-sizing:border-box;margin:0 auto">
-
-  <!-- 文章头部 -->
-  ... (见 5.1)
-
-  <!-- 正文组件 -->
-  ... (见第五部分)
-
-  <!-- 尾部卡片 -->
-  ... (见 12.2)
-
+<section style="text-align:center;margin:12px 0;box-sizing:border-box;max-width:100%!important">
+  <img src="https://..." draggable="false" style="width:100%;border-radius:8px;box-sizing:border-box;max-width:100%!important;vertical-align:middle">
 </section>
 ```
 
 ---
 
-## 第十部分：暗黑模式与白天模式兼容
+## 第五部分：颜色系统
 
-微信公众号文章在暗黑模式下会自动适配，但需要注意以下规则：
+### 5.1 安全取色方式
 
-### 10.1 背景色规则（透明优先）
+```
+✅ background-color: #f5f5f5         ← hex，最安全
+✅ background-color: rgb(245,245,245) ← rgb，安全
+⚠️ background-color: rgba(0,0,0,0.05) ← rgba，部分场景兼容
+❌ background: linear-gradient(...)   ← 渐变色，不兼容
+```
 
-- **文章容器背景使用 `transparent` 或无背景** — 让微信的默认底色透出，白天模式自然白底，暗黑模式自动变深色
-- **卡片底色使用 `rgba(0,0,0,0.03)` ~ `rgba(0,0,0,0.06)`** — 半透明在两种模式下都能看清层次
-- **标签按钮和强调元素可使用主题色**
-- **文字颜色使用深色 `#1a1a1a` / `#333` / `#555`** — 暗黑模式下自动转为浅色
-- **渐变使用透明色停止点** — 如 `linear-gradient(to right, rgba(0,0,0,0.06), transparent)`
+### 5.2 颜色层级规范
 
-### 10.2 图片规则
-
-- 图片不会被反色处理
-- 文字截图在暗黑模式下保持原样
-- 渐变背景使用 `linear-gradient` 设计卡片层次
-
-### 10.3 注意事项
-
-- 不使用 `@media (prefers-color-scheme: dark)` — 公众号自动处理
-- 文字和背景对比度至少 4.5:1
-- 白色卡片 + 浅灰文字 = 暗黑模式下也清晰
+| 层级 | 用途 | 色值范围 |
+|------|------|---------|
+| 主色 | 标题、强调 | 饱和色，如 `#c44`, `#2d6db5` |
+| 辅色 | 背景、标签 | 浅色，如 `#f0f4ff`, `#faf8f5` |
+| 正文色 | 正文文字 | `#333` ~ `#555` |
+| 弱色 | 辅助文字、注释 | `#999` ~ `#bbb` |
 
 ---
 
-## 第十一部分：AI 内容处理权限
+## 第六部分：排版组件
 
-AI 在生成排版时可以适度修改文章内容：
+### 6.1 标题行
 
-### 11.1 允许的操作
+```html
+<section style="display:flex;flex-flow:row;align-items:center;justify-content:center;margin:18px 0 14px;box-sizing:border-box;max-width:100%!important">
+  <section style="width:100%;height:1px;background-color:#ddd;box-sizing:border-box;max-width:100%!important"></section>
+  <section style="font-size:15px;font-weight:bold;color:#333;white-space:nowrap;margin:0 14px;box-sizing:border-box;max-width:100%!important">标题文字</section>
+  <section style="width:100%;height:1px;background-color:#ddd;box-sizing:border-box;max-width:100%!important"></section>
+</section>
+```
 
-- **提取金句**：从正文中提取最有冲击力的句子，做成引用块或大字居中展示
-- **拆分段落**：将长段落拆为短段落，增强阅读节奏
-- **添加小标题总结**：为章节添加一句话核心提炼
-- **数据可视化**：将数据句包装为数字卡片组件
-- **重组顺序**：在不改变逻辑的前提下优化叙事结构
-- **浓缩开头**：将文章开头凝练为引人入胜的导语
+### 6.2 标题栏（带装饰线）
 
-### 11.2 禁止的操作
+```html
+<section style="display:flex;flex-flow:row;align-items:center;margin:12px 0 8px;box-sizing:border-box;max-width:100%!important">
+  <section style="width:4px;height:18px;background-color:主色;border-radius:2px;flex-shrink:0;box-sizing:border-box;max-width:100%!important"></section>
+  <section style="font-size:17px;font-weight:bold;color:#333;margin:0 0 0 10px;box-sizing:border-box;max-width:100%!important">标题</section>
+</section>
+```
 
-- 不得改变事实和数据
-- 不得添加原文没有的观点
-- 不得删除关键论据
-- 不得改变文章立场和结论
+### 6.3 引用块
 
-### 11.3 原则
+```html
+<section style="margin:14px 0;padding:14px 16px;background-color:#f7f8fa;border-left:4px solid 主色;border-radius:4px;box-sizing:border-box;max-width:100%!important">
+  <p style="font-size:14px;color:#555;line-height:1.8;margin:0;box-sizing:border-box">引用文字内容</p>
+</section>
+```
 
-保持原意，增强表现力。让文章在公众号中更易读、更有节奏、更美观。
+### 6.4 图文卡片
+
+```html
+<section style="margin:16px 0;padding:18px 16px;background-color:#faf8f5;border-radius:8px;box-sizing:border-box;max-width:100%!important">
+  <p style="font-size:15px;font-weight:bold;color:#333;margin:0 0 6px;box-sizing:border-box">小标题</p>
+  <p style="font-size:14px;color:#555;line-height:1.85;margin:0;box-sizing:border-box">正文内容...</p>
+</section>
+```
+
+### 6.5 分割线
+
+```html
+<section style="margin:20px 0;text-align:center;box-sizing:border-box;max-width:100%!important">
+  <section style="display:inline-block;width:60px;height:1px;background-color:#ddd;box-sizing:border-box;max-width:100%!important"></section>
+</section>
+```
+
+或者带装饰：
+```html
+<section style="margin:20px 0;text-align:center;box-sizing:border-box;max-width:100%!important">
+  <span style="font-size:12px;color:#ccc;letter-spacing:8px">• • •</span>
+</section>
+```
 
 ---
 
-## 第十二部分：AI 自由设计头尾卡片
+## 第七部分：头尾卡片（Header / Footer Cards）
 
-AI 应根据所选主题风格，自由设计文章头部和尾部卡片。
+### 7.1 头部卡片 — 纯色背景（✅ 安全）
 
-### 12.1 头部卡片（必须包含）
-
-头部卡片应包含以下信息，但设计形式由 AI 根据主题自由发挥：
-
-- 文章字数
-- 预计阅读时间
-- 话题标签（从内容中提取 3-5 个关键词）
-- 一句话全文概览（AI 从文章中提炼）
-
-设计方向参考：卡片式、档案式、终端命令行式、手帐贴纸式、报纸头版式等，需与主题风格匹配。
-
-### 12.2 尾部卡片（必须包含）
-
-尾部卡片用于引导读者互动，应包含：
-
-- 引导文案（如"如果觉得有收获"、"喜欢这篇文章吗？"等，AI 根据文章调性设计）
-- 点赞 / 在看 / 转发 的行动引导
-- 一句温暖的结尾语
-
-#### 底部图标设计规范
-
-互动按钮使用 emoji 图标 + 文字的组合，5 种标准风格供 AI 选择：
-
-**风格A — 经典三连按钮**
 ```html
-<section style="display:flex;flex-flow:row;justify-content:center;gap:10px">
-  <section style="padding:8px 20px;background:主题色;color:#fff;font-size:12px;font-weight:600;border-radius:6px;">👍 点赞</section>
-  <section style="padding:8px 20px;background:强调色;color:#fff;font-size:12px;font-weight:600;border-radius:6px;">👀 在看</section>
-  <section style="padding:8px 20px;background:第三色;color:#fff;font-size:12px;font-weight:600;border-radius:6px;">↗ 转发</section>
+<section style="width:100%;padding:30px 20px;text-align:center;background-color:#f7f2ea;box-sizing:border-box;max-width:100%!important">
+  <p style="font-size:22px;font-weight:bold;color:#333;margin:0 0 8px;letter-spacing:2px;box-sizing:border-box">标题</p>
+  <p style="font-size:12px;color:#999;margin:0;letter-spacing:1px;box-sizing:border-box">副标题或摘要</p>
 </section>
 ```
 
-**风格B — 胶囊渐变**
+> ❌ **避免**使用 `background: linear-gradient(...)`，公众号编辑器会丢弃渐变色。
+> ✅ **安全替代**：使用纯色 `background-color` + 文字颜色层次来营造设计感。
+
+### 7.2 头部卡片 — 带左右装饰
+
 ```html
-<section style="display:flex;flex-flow:row;justify-content:center;gap:12px">
-  <section style="padding:9px 22px;background:linear-gradient(135deg,主题色,变体);color:#fff;font-size:12px;font-weight:600;border-radius:50px;">👍 点赞</section>
-  <section style="padding:9px 22px;background:linear-gradient(135deg,强调色,变体);color:#fff;font-size:12px;font-weight:600;border-radius:50px;">👀 在看</section>
-  <section style="padding:9px 22px;background:linear-gradient(135deg,金色,变体);color:#fff;font-size:12px;font-weight:600;border-radius:50px;">↗ 转发</section>
+<section style="display:flex;flex-flow:row;align-items:center;justify-content:center;padding:24px 16px;background-color:#faf8f5;box-sizing:border-box;max-width:100%!important">
+  <section style="width:24px;height:2px;background-color:主色;box-sizing:border-box;max-width:100%!important"></section>
+  <section style="margin:0 14px;text-align:center;box-sizing:border-box;max-width:100%!important">
+    <p style="font-size:20px;font-weight:bold;color:#333;margin:0 0 4px;box-sizing:border-box">标题</p>
+    <p style="font-size:11px;color:#999;margin:0;box-sizing:border-box">副标题</p>
+  </section>
+  <section style="width:24px;height:2px;background-color:主色;box-sizing:border-box;max-width:100%!important"></section>
 </section>
 ```
 
-**风格C — 大图标文字**
+### 7.3 尾部卡片
+
 ```html
-<section style="display:flex;flex-flow:row;justify-content:center;gap:20px">
-  <section style="text-align:center"><p style="font-size:22px;margin:0 0 4px">👍</p><p style="font-size:10px;color:弱色;margin:0">点赞</p></section>
-  <section style="text-align:center"><p style="font-size:22px;margin:0 0 4px">👀</p><p style="font-size:10px;color:弱色;margin:0">在看</p></section>
-  <section style="text-align:center"><p style="font-size:22px;margin:0 0 4px">↗</p><p style="font-size:10px;color:弱色;margin:0">转发</p></section>
-  <section style="text-align:center"><p style="font-size:22px;margin:0 0 4px">⭐</p><p style="font-size:10px;color:弱色;margin:0">星标</p></section>
+<section style="margin:28px 0 20px;padding:20px 16px;text-align:center;background-color:#faf8f5;border-radius:8px;box-sizing:border-box;max-width:100%!important">
+  <p style="font-size:14px;font-weight:bold;color:#333;margin:0 0 4px;box-sizing:border-box">如果觉得有收获</p>
+  <p style="font-size:12px;color:#999;margin:0 0 14px;box-sizing:border-box">点赞 · 在看 · 转发，让更多人看到</p>
+  <section style="display:flex;flex-flow:row;justify-content:center;box-sizing:border-box;max-width:100%!important">
+    <section style="padding:8px 16px;margin:0 4px;background-color:主色;color:#fff;font-size:12px;font-weight:600;border-radius:6px;box-sizing:border-box;max-width:100%!important">👍 点赞</section>
+    <section style="padding:8px 16px;margin:0 4px;background-color:强调色;color:#fff;font-size:12px;font-weight:600;border-radius:6px;box-sizing:border-box;max-width:100%!important">👀 在看</section>
+    <section style="padding:8px 16px;margin:0 4px;background-color:金色;color:深色;font-size:12px;font-weight:600;border-radius:6px;box-sizing:border-box;max-width:100%!important">↗ 转发</section>
+  </section>
 </section>
 ```
 
-**风格D — 极简文字链**
+### 7.4 极简尾部
+
 ```html
-<section style="display:flex;flex-flow:row;justify-content:center;gap:24px">
-  <p style="font-size:11px;color:弱色;margin:0;letter-spacing:1px">👍 点赞</p>
-  <p style="font-size:11px;color:弱色;margin:0;letter-spacing:1px">👀 在看</p>
-  <p style="font-size:11px;color:弱色;margin:0;letter-spacing:1px">↗ 分享</p>
+<section style="margin:24px 0 20px;padding:18px 16px;text-align:center;border-top:1px solid #eee;box-sizing:border-box;max-width:100%!important">
+  <p style="font-size:11px;color:#bbb;margin:0;letter-spacing:0.5px;box-sizing:border-box">— END —</p>
 </section>
 ```
 
-**风格E — 暗色标签卡**
+---
+
+## 第八部分：按钮与交互元素
+
+### 8.1 文字按钮（✅ 安全）
+
 ```html
-<section style="display:flex;flex-flow:row;justify-content:center;gap:8px">
-  <section style="padding:5px 14px;background:主题色;color:#fff;font-size:10px;font-weight:600;letter-spacing:1px;border-radius:4px">👍 点赞</section>
-  <section style="padding:5px 14px;background:强调色;color:#fff;font-size:10px;font-weight:600;letter-spacing:1px;border-radius:4px">👀 在看</section>
-  <section style="padding:5px 14px;background:金色;color:深色;font-size:10px;font-weight:600;letter-spacing:1px;border-radius:4px">↗ 转发</section>
+<section style="display:flex;flex-flow:row;justify-content:center;box-sizing:border-box;max-width:100%!important">
+  <p style="font-size:12px;color:#999;margin:0 10px;letter-spacing:1px;box-sizing:border-box">👍 点赞</p>
+  <p style="font-size:12px;color:#999;margin:0 10px;letter-spacing:1px;box-sizing:border-box">👀 在看</p>
+  <p style="font-size:12px;color:#999;margin:0 10px;letter-spacing:1px;box-sizing:border-box">↗ 转发</p>
 </section>
 ```
 
-#### 图标选择指南
+### 8.2 标签按钮（✅ 安全）
 
-- **点赞**：👍 / 💗 / ❤️ / ✨
-- **在看**：👀 / 📖 / 🔍 / 💭
-- **转发**：↗ / 📤 / 🔄 / 💬
-- **星标**：⭐ / 🌟 / 💫 / 🔖
+```html
+<section style="display:flex;flex-flow:row;justify-content:center;box-sizing:border-box;max-width:100%!important">
+  <section style="padding:6px 16px;margin:0 4px;background-color:主色;color:#fff;font-size:11px;font-weight:600;border-radius:20px;box-sizing:border-box;max-width:100%!important">👍 点赞</section>
+  <section style="padding:6px 16px;margin:0 4px;background-color:强调色;color:#fff;font-size:11px;font-weight:600;border-radius:20px;box-sizing:border-box;max-width:100%!important">👀 在看</section>
+  <section style="padding:6px 16px;margin:0 4px;background-color:#c8882e;color:#fff;font-size:11px;font-weight:600;border-radius:20px;box-sizing:border-box;max-width:100%!important">↗ 转发</section>
+</section>
+```
 
-### 12.3 设计原则
+---
 
-- 头尾卡片是文章的门面和告别，要有设计感
-- 使用圆角、渐变、阴影（公众号支持的范围内）
-- 图标使用 emoji，不用 CSS 背景图（兼容性最好）
-- 每个图标按钮有明确的颜色区分
-- 色板与主题一致
-- 排版有趣但不花哨
-- 手机端一屏能看到完整卡片
-- 尾部卡片底部留 20-30px 呼吸空间
+## 第九部分：公众号粘贴注意事项
+
+### 9.1 粘贴后必检清单
+
+粘贴到公众号后台后，务必检查以下项目：
+
+| # | 检查项 | 如果丢失怎么办 |
+|---|--------|--------------|
+| 1 | `!important` 是否还在 | 手动在公众号后台补加 |
+| 2 | 背景色是否正确 | 检查 `background-color`，渐变丢失是正常的 |
+| 3 | 圆角 `border-radius` 是否保留 | 通常没问题 |
+| 4 | 图片是否显示 | 公众号图片必须上传到素材库，外部链接不显示 |
+| 5 | 间距是否错乱 | `margin` 通常正常，`gap` 可能丢失 |
+
+### 9.2 已知不兼容模式
+
+```
+模式                          → 结果
+────────────────────────────────────────────
+background: linear-gradient   → 渐变色丢失，变成纯色或白色背景
+box-shadow                    → 阴影消失
+text-shadow                   → 文字阴影消失
+transform: rotate/skew        → 变形消失
+opacity: 0.5                  → 透明度被忽略
+gap: 20px                     → 在某些 X5 版本中丢失
+<svg>...</svg>                → SVG 被编辑器过滤
+!important                    → 粘贴时被编辑器剥除
+font-size: 0                  → 文字消失
+line-height: 0                → 文字重叠
+```
+
+### 9.3 最佳实践
+
+1. **先试纯色**：设计时优先用 `background-color` + 边框，验证通过后再尝试添加渐变等效果
+2. **保留基本结构**：确保去除特效后内容仍然可读
+3. **粘贴后用"预览"检查**：在公众号后台发送预览到手机，检查真实效果
+4. **不要依赖阴影**：如果设计需要层次感，用 `border` 叠加或颜色深浅来实现
 
 ---
 
@@ -1001,12 +448,13 @@ AI 应根据所选主题风格，自由设计文章头部和尾部卡片。
 
 ```
 ┌─ 布局 ─────────────────────────────────────┐
-│ display: flex | inline-block | block | grid │
+│ display: flex | inline-block | block       │
 │ flex-flow: row | column                     │
 │ flex: 0 0 auto | 0 0 90%                   │
 │ justify-content: center | flex-start        │
 │ align-items: center | flex-start            │
-│ grid-template-columns/rows: 100%            │
+│ ⚠️ gap → 改用子元素 margin                  │
+│ ❌ grid → 不受支持                          │
 ├─ 盒模型 ───────────────────────────────────┤
 │ box-sizing: border-box  ← 强制              │
 │ max-width: 100% !important  ← 强制          │
@@ -1015,21 +463,38 @@ AI 应根据所选主题风格，自由设计文章头部和尾部卡片。
 │ overflow: hidden | visible                 │
 ├─ 文字 ─────────────────────────────────────┤
 │ font-size: 9-51px (基准14px)               │
-│ line-height: 0-3 (正文1.85)                │
+│ line-height: 1.5-2.5 (正文1.85)            │
 │ letter-spacing: 0-5px (正文0.3)            │
 │ text-align: center | justify | left        │
-│ color: #hex | rgb() | rgba()              │
+│ color: #hex (推荐) | rgb()                 │
+│ ⚠️ rgba() 可能被转换                       │
 ├─ 背景 ─────────────────────────────────────┤
-│ background-color: #xxx | rgb() | rgba()   │
-│ background: linear-gradient(方向,c1,c2)    │
+│ ✅ background-color: 安全                    │
+│ ❌ background: linear-gradient → 不兼容     │
+│ ❌ background-image: url → 不加载           │
 ├─ 边框 ─────────────────────────────────────┤
 │ border: 1px solid #xxx                     │
 │ border-left/right/top/bottom               │
 │ border-radius: px | % | 99px              │
+│ ⚠️ box-shadow → 可能丢失                   │
 ├─ 特效 ─────────────────────────────────────┤
-│ text-shadow: (多阴影描边)                    │
-│ transform: rotate/skew/translate (4前缀)   │
-│ opacity: 0-1                               │
-│ z-index: 1-7                               │
+│ ❌ transform → 不兼容                       │
+│ ❌ opacity → 不兼容，用 rgba 替代           │
+│ ❌ <svg> → 不兼容                          │
+│ ✅ z-index: 1-7 支持                       │
 └────────────────────────────────────────────┘
 ```
+
+## 附录 B：设计原则
+
+### 安全 > 花哨
+在公众号排版中，**能稳定显示**比"在截图中好看"更重要。优先使用经过验证的安全属性。
+
+### 纯色优先
+用 `background-color` + 颜色层次来创造视觉区分，而不是依赖渐变和阴影。
+
+### 粘贴即验证
+每次生成排版后，实际粘贴到公众号后台看一下效果。如果某个效果丢失，调整方案。
+
+### 渐进增强
+先保证纯色版本完整可读，再尝试添加渐变、阴影等增强效果（知道它们可能丢失）。
