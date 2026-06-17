@@ -1,4 +1,4 @@
-﻿---
+---
 name: grindraft-illustrate
 description: |
   正文配图生成。读文章自动分析出配图策略（shot list），用小黑怪诞手绘风格逐张生成 16:9 横版插图。
@@ -233,10 +233,10 @@ fi
 
 ### 3.2 调用 image-2 服务
 
-使用 `scripts/generate-illustration.py` 脚本（Python 3.9+，依赖 requests）：
+使用 `scripts/illustrate.py` 脚本（Python 3.9+，依赖 requests）：
 
 ```bash
-python skills/grindraft-illustrate/scripts/generate-illustration.py \
+python scripts/illustrate.py \
   --prompt "<英文prompt>" \
   --output "articles/{标题}_{日期}/illustrations/{序号}-{主题}.png" \
   --size "1024x576"

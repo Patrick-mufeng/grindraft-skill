@@ -30,6 +30,7 @@
         "./skills/grindraft-bump",
         "./skills/grindraft-recommend",
         "./skills/grindraft-status",
+        "./skills/grindraft-illustrate",
         "./skills/grindraft-score-blind",
         "./skills/grindraft-polish"
       ]

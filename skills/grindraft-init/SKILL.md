@@ -79,6 +79,37 @@ allowed-tools:
 - B) medium — "我给大纲和要点，AI 扩写"
 - C) high — "我给选题，AI 出初稿，我修改"
 
+
+
+### Phase 0.5: 发现 skill 安装路径
+
+初始化所需的模板、rubric 和脚本文件随 skill 安装。在开始复制文件前，先确定 skill 的实际安装路径：
+
+```bash
+# 发现 grindraft-init skill 安装目录
+SKILL_DIR=""
+for candidate in ".claude/skills/grindraft-init" "skills/grindraft-init"; do
+    if [ -d "$candidate" ]; then
+        SKILL_DIR=$(cd "$candidate" && pwd)
+        break
+    fi
+done
+
+# 发现 grindraft-illustrate skill 安装目录
+ILLUSTRATE_SKILL_DIR=""
+for candidate in ".claude/skills/grindraft-illustrate" "skills/grindraft-illustrate"; do
+    if [ -d "$candidate" ]; then
+        ILLUSTRATE_SKILL_DIR=$(cd "$candidate" && pwd)
+        break
+    fi
+done
+
+echo "SKILL_DIR: $SKILL_DIR"
+echo "ILLUSTRATE_SKILL_DIR: $ILLUSTRATE_SKILL_DIR"
+```
+
+> 路径搜索顺序：`.claude/skills/`（插件市场安装）→ `skills/`（本地开发/手动复制）。如果都找不到，提示用户手动指定。
+
 ### Phase 2: 创建目录和骨架文件
 
 在用户项目根目录下创建：
@@ -86,12 +117,13 @@ allowed-tools:
 ```
 articles/
 plates/style-diffs/
+scripts/
 .grindraft-cache/
 ```
 
 写入模板文件（**绝不覆盖已有文件**——用户如果已有同名的，先警告再询问）：
 
-| 文件 | 来源模板 |
+| 文件 | 来源模板（从 $SKILL_DIR 读取） |
 |---|---|
 | rubric_notes.md | templates/rubric_notes.template.md |
 | style_guide.md | templates/style_guide.template.md |
@@ -138,7 +170,7 @@ npm --version 2>/dev/null && echo "npm: OK" || echo "npm: MISSING"
 
 | skill | 所需运行时 | 包依赖 | 安装命令 |
 |-------|-----------|--------|---------|
-| `grindraft-illustrate` | Python 3.9+ | `requests` | `pip install requests` |
+| `grindraft-illustrate` | Python 3.9+ | `requests` + 配图脚本 | `pip install requests` + 复制配图脚本 |
 | `grindraft-cover` | Node.js 18+ | `puppeteer`, `canvas` | `npm install puppeteer canvas`（可选，仅 PNG 渲染需要，HTML 预览无依赖） |
 
 #### 交互流程
@@ -169,7 +201,27 @@ npm --version 2>/dev/null && echo "npm: OK" || echo "npm: MISSING"
 3. 用户选择跳过 → 记录到 `.grindraft-state.json` 的 `dependencies` 字段，后续对应 skill 首次运行时提示
 4. 安装完成 → 验证安装结果（`python -c "import requests"` / `node -e "require('puppeteer');require('canvas')"`）
 
+
+#### 复制配图脚本
+
+安装依赖后，将配图脚本复制到项目 `scripts/` 目录：
+
+```bash
+# 创建 scripts/ 目录（如不存在）
+mkdir -p scripts
+
+# 复制配图脚本（使用 Phase 0.5 发现的 ILLUSTRATE_SKILL_DIR 路径）
+cp "$ILLUSTRATE_SKILL_DIR/scripts/generate-illustration.py" scripts/illustrate.py
+
+# 验证复制成功
+ls -la scripts/illustrate.py
+```
+
+> 配图脚本 (illustrate.py) 使用 Python 3.9+ 和 requests 库，通过 OpenAI 兼容 API 调用 gpt-image-2 模型生图。
+> 复制完成后，`grindraft-illustrate` 将优先使用项目 `scripts/illustrate.py`。
+
 #### 验证命令
+
 
 ```bash
 # 验证 requests
@@ -205,7 +257,7 @@ node -e "const p=require('puppeteer');const c=require('canvas');console.log('pup
 
 #### 3.0 复制初始 rubric
 
-复制 `starter-rubrics/wechat-long-form-zero.md` 内容到 `rubric_notes.md` 的"当前公式"段。
+从 `$SKILL_DIR/starter-rubrics/wechat-long-form-zero.md` 读取初始 rubric 内容，写入 `rubric_notes.md` 的"当前公式"段。
 
 #### 3.1 询问历史文章
 

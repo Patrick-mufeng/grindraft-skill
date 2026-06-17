@@ -24,7 +24,7 @@ raw = (HK + NR + QA + UT + DT + EP + SC) / 7
 composite = raw × 2.0
 ```
 
-composite 范围：2-10（每个维度 1-5 × 等权平均 × 2.0）。与 cheat-on-content v0 量纲一致。
+composite 范围：0-10（每个维度 1-5 × 等权平均 × 2.0）。与 cheat-on-content v0 量纲一致。
 
 ## Cold-start 简化预测
 

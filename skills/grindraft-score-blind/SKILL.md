@@ -39,7 +39,7 @@ spawn 时 Task prompt 传两个路径：
     "EP": { "score": 2, "reason": "全程偏理性，缺乏情绪峰值" },
     "SC": { "score": 3, "reason": "开头埋了线，结尾简单回扣" }
   },
-  "composite": 12.63,
+  "composite": 6.29,
   "self_check": {
     "any_contamination_signal": false,
     "notes": ""

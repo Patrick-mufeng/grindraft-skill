@@ -20,7 +20,7 @@
 composite = (HK×2.0 + NR×2.0 + QA×1.5 + UT×1.5 + DT×1.0 + EP×1.0 + SC×0.5) / 9.5 × 2.0
 ```
 
-分母 9.5 = 总权重之和。乘以 2.0 将 composite 映射到 0-10 区间，与 cheat-on-content 量纲一致。
+分母 9.5 = 总权重之和。乘以 2.0 将 composite 映射到 2-10 区间，与 cheat-on-content 量纲一致。
 
 > 初始权重是先验猜测，随复盘数据进化。
 

@@ -26,7 +26,6 @@ import json
 import os
 import sys
 import time
-from pathlib import Path
 
 try:
     import requests
@@ -192,10 +191,8 @@ def main():
     if args.project_root:
         project_root = os.path.abspath(args.project_root)
     else:
-        # 从脚本位置向上: scripts/ -> grindraft-illustrate/ -> skills/ -> 项目根
-        script_dir = Path(__file__).resolve().parent
-        project_root = script_dir.parent.parent.parent  # 上 3 级
-        project_root = str(project_root)
+        # 默认使用当前工作目录（脚本始终从项目根目录调用）
+        project_root = os.getcwd()
 
     # 加载配置
     config = load_config(project_root)
