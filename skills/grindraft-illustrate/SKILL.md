@@ -249,13 +249,47 @@ python skills/grindraft-illustrate/scripts/generate-illustration.py \
 - 从返回的 `b64_json` 解码保存为本地 PNG 文件
 - 输出 JSON：`{"success": true, "path": "...", "url": "", "attempts": 1}`
 - 模型固定使用 `gpt-image-2`，不可切换
-- 超时时间：500 秒（生图耗时较长）
+- 超时时间：300 秒（可传 `--timeout` 自定义）
 
 ### 3.3 错误处理
 
-- API 调用失败 → 重试最多 2 次，间隔 3 秒
+- API 调用失败 → 指数退避重试（3s → 9s → 27s），最多 2 次
+- 网络连通性检测：发请求前先快速 ping API 地址（5s 超时），网络不通立即报错不等待
+- 备选 API 切换：传 `--fallback-url <地址>`，连续失败 2 次后自动切换到备选地址
 - 仍失败 → 跳过该张，在汇总中标注
 - 连续 3 张失败 → 停止，提示用户检查 API 配置
+
+### 3.4 超时和上游负载的排查
+
+如果配图生成经常超时，按以下顺序排查：
+
+**1. 网络连通性**
+```bash
+# 测试 API 是否可达
+curl -s -o /dev/null -w "%{http_code}" https://yunwu.ai/v1/models
+# 正常应返回 200
+```
+
+**2. 延长超时时间**
+```bash
+# 默认 300s，可延长到 600s
+python ... --timeout 600
+```
+
+**3. 切换备选 API 地址**
+```bash
+# 如果主地址负载高，指定备选
+python ... --fallback-url https://备选地址/
+```
+
+**4. 常见原因**
+
+| 现象 | 原因 | 解决 |
+|------|------|------|
+| `无法连接 API 服务` | 本地网络不通 / API 地址错误 | 检查 `.env` 中的 `YUNWU_BASE_URL` |
+| `API 请求超时（>300s）` | 上游 gpt-image-2 负载高 | `--timeout 600` 或错峰使用 |
+| `API 返回 429/503` | 请求频率过高 / 服务限流 | 降低并发，增加 `--retries` |
+| `API 返回 4xx` | API Key 无效或余额不足 | 检查 `YUNWU_API_KEY` 是否有效 |
 
 ---
 

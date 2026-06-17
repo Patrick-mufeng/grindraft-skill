@@ -131,10 +131,16 @@ def call_generation_api(prompt: str, base_url: str, api_key: str,
         **({"Authorization": f"Bearer {api_key}"} if api_key else {}),
     }
 
+    # 连通性快速检测（5s 超时），避免长等待后才发现网络不通
+    try:
+        requests.get(base_url.rstrip('/') + '/v1/models', headers=headers, timeout=5)
+    except requests.RequestException:
+        return {"success": False, "error": f"无法连接 API 服务（{base_url}），请检查网络和 API 地址"}
+
     try:
         resp = requests.post(url, json=payload, headers=headers, timeout=timeout)
     except requests.Timeout:
-        return {"success": False, "error": f"API 请求超时（>{timeout}s）"}
+        return {"success": False, "error": f"API 请求超时（>{timeout}s），当前可能为生图高峰期或模型负载过高，建议稍后重试"}
     except requests.ConnectionError:
         return {"success": False, "error": f"无法连接 API 服务: {base_url}"}
     except requests.RequestException as e:
@@ -177,6 +183,8 @@ def main():
     parser.add_argument("--output", required=True, help="输出 PNG 路径")
     parser.add_argument("--size", default="1024x576", help="图片尺寸（默认 1024x576）")
     parser.add_argument("--retries", type=int, default=2, help="失败重试次数（默认 2）")
+    parser.add_argument("--timeout", type=int, default=300, help="API 超时秒数（默认 300）")
+    parser.add_argument("--fallback-url", default=None, help="备选 API 地址（主地址失败时自动切换）")
     parser.add_argument("--project-root", default=None, help="项目根目录（默认从脚本位置自动推断）")
     args = parser.parse_args()
 
@@ -204,19 +212,35 @@ def main():
 
     base_url = config["IMAGE2_BASE_URL"]
     api_key = config["YUNWU_API_KEY"]
+    fallback_url = args.fallback_url or None
     output_path = os.path.abspath(args.output)
     retries = args.retries
+    timeout = args.timeout
 
     errors = []
+    used_fallback = False
     for attempt in range(retries + 1):
         if attempt > 0:
-            time.sleep(3)
+            # 指数退避：3s → 9s → 27s
+            backoff = 3 * (3 ** (attempt - 1))
+            import sys as _sys
+            print(json.dumps({"info": f"第 {attempt + 1} 次重试，等待 {backoff}s..."}), file=_sys.stderr)
+            time.sleep(backoff)
+
+        # 如果连续失败且存在 fallback URL，自动切换
+        current_url = base_url
+        if attempt >= 2 and fallback_url and not used_fallback:
+            current_url = fallback_url
+            used_fallback = True
+            import sys as _sys
+            print(json.dumps({"info": f"切换到备选 API: {fallback_url}"}), file=_sys.stderr)
 
         result = call_generation_api(
             prompt=args.prompt,
-            base_url=base_url,
+            base_url=current_url,
             api_key=api_key,
             size=args.size,
+            timeout=timeout,
         )
 
         if not result["success"]:
@@ -268,11 +292,17 @@ def main():
         errors.append(f"第 {attempt + 1} 次: API 返回数据中既无 b64_json 也无 url")
 
     # 全部重试失败
+    hint = ""
+    if used_fallback:
+        hint = "（已尝试主地址和备选地址均失败）"
+    elif fallback_url:
+        hint = "（可尝试 --fallback-url 指定备选 API）"
     print(json.dumps({
         "success": False,
-        "error": errors[-1] if errors else "未知错误",
+        "error": f"{errors[-1] if errors else '未知错误'}{hint}",
         "all_errors": errors,
         "attempts": retries + 1,
+        "used_fallback": used_fallback,
     }))
     sys.exit(1)
 
