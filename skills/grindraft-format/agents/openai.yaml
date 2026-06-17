@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft Format"
+  short_description: "Markdown to WeChat-compatible HTML formatting"
+  default_prompt: "Use $grindraft-format to convert markdown to WeChat-ready HTML."

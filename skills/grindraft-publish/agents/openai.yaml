@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft Publish"
+  short_description: "Article URL registration and status update"
+  default_prompt: "Use $grindraft-publish to register a published article URL."

@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft Persona"
+  short_description: "Reader persona derivation from comments"
+  default_prompt: "Use $grindraft-persona to derive audience personas from comments."

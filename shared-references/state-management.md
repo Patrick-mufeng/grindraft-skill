@@ -55,6 +55,14 @@
   "consecutive_directional_errors": [],
   "enabled_trend_sources": ["aihot"],
 
+  "dependencies": {
+    "illustrate_python": { "installed": false, "version": null },
+    "illustrate_requests": { "installed": false, "version": null },
+    "cover_node": { "installed": false, "version": null },
+    "cover_puppeteer_canvas": { "installed": false, "version": null },
+    "_note": "grindraft-init 安装依赖时填充，缺失不阻塞流程，首次使用对应 skill 时提示"
+  },
+
   "baseline_metrics": {
     "avg_reads": null,
     "share_rate": null,
@@ -78,7 +86,7 @@
 
 | 子 skill | 读哪些字段 | 写哪些字段 |
 |---|---|---|
-| grindraft-init | 全部 | 全部（初始化，含 historical_samples / baseline_metrics / rubric_fitted_from_history） |
+| grindraft-init | 全部 | 全部（初始化，含 historical_samples / baseline_metrics / rubric_fitted_from_history / dependencies） |
 | grindraft-trends | enabled_trend_sources | last_trends_run_at |
 | grindraft-seed | mode, rubric_version, calibration_samples | —（写 candidates.md 和 drafts/） |
 | grindraft-write | mode, user_profile | in_progress_session |

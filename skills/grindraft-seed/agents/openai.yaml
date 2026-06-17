@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft Seed"
+  short_description: "Topic exploration through deep dialogue"
+  default_prompt: "Use $grindraft-seed to discover and refine article topics with the user."

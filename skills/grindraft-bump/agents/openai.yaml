@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft Bump"
+  short_description: "Rubric formula upgrade with full re-score"
+  default_prompt: "Use $grindraft-bump to upgrade the scoring rubric."

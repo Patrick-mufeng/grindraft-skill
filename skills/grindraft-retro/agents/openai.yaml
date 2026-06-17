@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft Retro"
+  short_description: "T+N day data recall and prediction validation"
+  default_prompt: "Use $grindraft-retro to review article performance data."

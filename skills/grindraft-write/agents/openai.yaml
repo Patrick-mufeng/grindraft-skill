@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft Write"
+  short_description: "AI article drafting with adjustable autonomy"
+  default_prompt: "Use $grindraft-write to draft a WeChat long-form article from notes."

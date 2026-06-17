@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft"
+  short_description: "WeChat long-form writing calibration loop system"
+  default_prompt: "Use $grindraft to start the full writing workflow from trends to retrospective."

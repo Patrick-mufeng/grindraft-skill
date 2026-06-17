@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft Trends"
+  short_description: "Fetch AI industry highlights and trending topics"
+  default_prompt: "Use $grindraft-trends to fetch today AI trends and write to topic pool."

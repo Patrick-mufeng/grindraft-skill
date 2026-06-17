@@ -80,7 +80,8 @@ Always fetch the real current date via system command before any time-sensitive 
 
 ## Key Dependencies
 
-- **Node.js 18+** (optional): Required for `grindraft-cover` PNG export (`puppeteer` + `canvas`) and `grindraft-illustrate` image generation. Cover HTML preview works without Node.js.
+- **Node.js 18+** (optional): Required for `grindraft-cover` PNG export (`puppeteer` + `canvas`). Cover HTML preview works without Node.js.
+- **Python 3.9+** (optional): Required for `grindraft-illustrate` inline image generation (`requests`).
 - **aihot API**: Public, no auth required. Used by `grindraft-trends` for trend fetching.
 
 ## Adding New Content Formats

@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft Score Blind"
+  short_description: "Internal isolated blind 7-dim rubric scorer"
+  default_prompt: "Use $grindraft-score-blind for isolated blind rubric scoring."

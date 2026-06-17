@@ -88,7 +88,7 @@ B) 直接排版 → 跳过
 |---|---|
 | 输出到文章文件夹 | `articles/{标题}_{日期}/output.html` 和 `articles/{标题}_{日期}/output-preview.html` |
 | 封面图片 | 如有封面，已在 `articles/{标题}_{日期}/cover/` 子目录下 |
-| 配图 | 如有配图，已在 `articles/{标题}_{日期}/illustrations/` 子目录下 |
+| 配图 | 如有配图，已在 `articles/{标题}_{日期}/illustrations/` 子目录下。HTML 中引用方式：`<img src="illustrations/01-xxx.png">`（相对 output.html 的路径） |
 
 #### 落盘（两个文件）
 

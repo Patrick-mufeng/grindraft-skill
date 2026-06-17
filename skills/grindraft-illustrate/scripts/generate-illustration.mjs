@@ -1,6 +1,9 @@
 /**
  * grindraft-illustrate 生图脚本（Node.js）
  *
+ * ⚠️ 已废弃，请使用 generate-illustration.py（Python 3.9+）替代。
+ *    本文件仅作向后兼容保留。
+ *
  * 用法:
  *   node generate-illustration.mjs \
  *     --prompt "..." \

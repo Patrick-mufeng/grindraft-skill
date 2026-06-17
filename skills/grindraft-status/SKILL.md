@@ -52,20 +52,23 @@ allowed-tools:
 | nvidia-polar | 已发 ✅ | — |
 | image2开源 | 已预测 ✅ | 发URL |
 | fde架构师 | 已排版 ✅ | 启动预测 |
-| agent之争 | 封面 ✅ | 排版 |
+| agent之争 | 配图完成 ✅ | 排版 |
 | R1推理 | 配图 ✅ | 设计封面 |
-| 开源出海 | 终稿 ✓ | 配图 |
+| 开源出海 | 配图中（策略已出） ✓ | 配图 |
 | AI面试 | 去味完成 ✅ | 设计封面 |
-| 长上下文 | 待改 | 改完→去味→配图→封面→排版→预测 |
+| 长上下文 | 待改 | 改完→配图→封面→排版→预测 |
 
 阶段判断逻辑：
 - draft.md 存在、final.md 不存在 → "待改"
-- final.md 存在、cover/preview.html 不存在 → "已定稿，待封面"
-- cover/preview.html 存在、illustrations/ 为空（无 shot-list.md）→ "封面已完成，待配图"（或跳过）
-- cover/preview.html 存在、output.html 不存在 → "封面 ✅ 待排版"
+- final.md 存在 → 检查配图/封面状态：
+  - illustrations/ 目录不存在或无 .png 文件、cover/ 不存在 → "待配图 + 封面"
+  - illustrations/ 有 .png 存在、cover/preview.html 不存在 → "配图完成 ✅ 待封面"
+  - cover/preview.html 存在、output.html 不存在 → "封面完成 ✅ 待排版"
 - output.html 存在、prediction.md 不存在 → "已排版，待预测"
 - prediction.md 存在、未发布 → "已预测，待发布"
-- 已发布 → "已发"
+- 已发布 → "已发 ✅"
+
+> 配图状态细化：`illustrations/shot-list.md` 存在但无 `.png` → "配图中（策略已出）"；有 `.png` → "配图完成 ✅"
 
 ## 📈 预测池
 

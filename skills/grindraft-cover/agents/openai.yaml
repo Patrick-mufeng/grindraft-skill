@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft Cover"
+  short_description: "WeChat article cover design with 40 templates"
+  default_prompt: "Use $grindraft-cover to design an article cover image."

@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft Status"
+  short_description: "Project status dashboard and progress view"
+  default_prompt: "Use $grindraft-status to view the writing dashboard."

@@ -139,7 +139,7 @@ Windows:    date /t
 | "找选题" / "我不知道写什么" / "seed" / "聊选题" | `grindraft-seed` | 已 init |
 | "写文章" / "帮我写一篇" / "write" / "出稿" | `grindraft-write` | 已 init + 有选题（含标题候选+简介+封面提示词） |
 | "去 AI 味" / "humanize" / "去味" / "修一下" | `grindraft-humanize` | 有初稿 |
-| "配图" / "生成配图" / "文章插图" / "illustrate" / "做插图" | `grindraft-illustrate` | 已改完稿 |
+| "配图" / "生成配图" / "文章插图" / "illustrate" / "做插图" | `grindraft-illustrate` | final.md 存在 |
 | "设计封面" / "帮我做封面" / "生成封面" / "公众号封面" / "封面" | `grindraft-cover` | 已改完稿（需 Node.js 可出 PNG） |
 | "排版" / "format" / "转 HTML" / "公众号排版" | `grindraft-format` | 有终稿 |
 | "启动预测" / "predict" / "写预测日志" | `grindraft-predict` | 已 init + 有最终稿（预测后可直接发URL登记） |
@@ -243,7 +243,8 @@ grindraft-skill/
 │   │   │   ├── qa-checklist.md
 │   │   │   └── composition-patterns.md
 │   │   └── scripts/
-│   │       └── generate-illustration.mjs
+│   │       ├── generate-illustration.py   # ★ 推荐 — Python 3.9+
+│   │       └── generate-illustration.mjs  # 备用 — Node.js 18+
 │   ├── grindraft-format/SKILL.md      # Markdown → 公众号 HTML
 │   ├── grindraft-predict/SKILL.md     # 盲预测（7 维 + bucket + 概率分布）
 │   ├── grindraft-publish/SKILL.md     # 发布登记

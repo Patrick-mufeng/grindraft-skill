@@ -28,7 +28,7 @@
 - 真实 UI 截图或科技感界面。
 - 中文错字严重或标注不可读。
 - 画面太死板，没有荒诞隐喻。
-- 和 `assets/examples/` 里的旧案例构图过于相似。
+- 和 `assets/examples/` 或 `references/composition-patterns.md` 列出的旧案例构图过于相似（参见该文件的"反复刻规则"）。
 
 ## 迭代方法
 

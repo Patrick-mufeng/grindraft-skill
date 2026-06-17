@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft Init"
+  short_description: "Project onboarding and scaffolding set-up tool"
+  default_prompt: "Use $grindraft-init to initialize a new writing project."

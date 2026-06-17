@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft Recommend"
+  short_description: "Topic pool ranking and recommendation"
+  default_prompt: "Use $grindraft-recommend to rank and recommend topic candidates."

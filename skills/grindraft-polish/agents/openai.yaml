@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft Polish"
+  short_description: "Title candidates and cover prompt generation"
+  default_prompt: "Use $grindraft-polish to generate polished title candidates."

@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft Humanize"
+  short_description: "Four-layer AI tell removal for natural text"
+  default_prompt: "Use $grindraft-humanize to remove AI writing tells from a draft."

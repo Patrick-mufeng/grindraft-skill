@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft Illustrate"
+  short_description: "Article inline illustration in Xiaohei style"
+  default_prompt: "Use $grindraft-illustrate to generate inline article illustrations."

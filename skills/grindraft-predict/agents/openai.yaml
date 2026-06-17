@@ -1,0 +1,4 @@
+﻿interface:
+  display_name: "Grindraft Predict"
+  short_description: "Immutable 7-dim blind prediction for articles"
+  default_prompt: "Use $grindraft-predict to write an immutable blind prediction log."

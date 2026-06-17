@@ -17,11 +17,12 @@ allowed-tools:
 
 ## 前置依赖
 
-**Node.js 18+**（fetch 内置，零 npm 依赖）。
+**Python 3.9+** + `requests`。
 
 检查依赖：
 ```bash
-node -v  # 需 >= 18
+python --version           # 需 >= 3.9
+pip install requests       # 安装 HTTP 请求库
 ```
 
 **首次使用引导**：配图功能默认使用 **云雾 API 中转站** 调用 ChatGPT image-2 模型生图。首次使用需要：
@@ -35,12 +36,14 @@ node -v  # 需 >= 18
 YUNWU_API_KEY=sk-你复制的API Key
 YUNWU_BASE_URL=https://yunwu.ai/
 
-# IMAGE2_BASE_URL 默认同 YUNWU_BASE_URL，通常无需修改
-# IMAGE2_BASE_URL=https://yunwu.ai/
+# IMAGE2_BASE_URL：默认为 YUNWU_BASE_URL，指向同一代理服务
+# 仅当使用独立的 image-2 兼容服务时才需覆盖此值
+# IMAGE2_BASE_URL=https://自建服务地址/
 ```
 
 > 配置优先级：`.env` → `.grindraft/config.env`，后者覆盖前者。
 > 首次使用会自动创建 `.grindraft/config.env` 模板。
+> `IMAGE2_BASE_URL` 未显式设置时自动回退到 `YUNWU_BASE_URL`，无需单独配置。
 
 > 📌 **为什么默认用云雾 API**：`gpt-image-2` 模型目前仅通过 API 中转站可用。云雾提供标准 OpenAI 兼容接口，注册即用，无需自建 image-2 服务。
 
@@ -50,10 +53,6 @@ YUNWU_BASE_URL=https://yunwu.ai/
 |------|------|---------|
 | ☁️ **云雾 API**（推荐） | `.env` 或 `.grindraft/config.env` 中填 `YUNWU_API_KEY` 即可 | 大多数用户，开箱即用 |
 | 🖥️ **自建 image-2 服务** | `.env` 或 `.grindraft/config.env` 中设 `IMAGE2_BASE_URL` 覆盖 | 有自建服务的高级用户 |
-
-
-> ℹ️ 配置优先级：`.env` → `.grindraft/config.env`，后者覆盖前者。
-> `IMAGE2_BASE_URL` 未显式设置时自动回退到 `YUNWU_BASE_URL`，通常无需配置。
 
 ---
 
@@ -200,7 +199,19 @@ fi
 ...
 ```
 
-展示给用户确认。用户可以说"去掉第3张""加一张关于XX的""直接生成"。
+---
+
+## Phase 2 · 用户确认策略
+
+将上一阶段的 shot list 展示给用户确认。用户确认前不要进入 Phase 3 生图。
+
+用户可以对 shot list 做增删改：
+- **"去掉第3张"** — 删除指定图片
+- **"加一张关于XX的"** — 新增一张图
+- **"改一下图4的核心意思"** — 修改现有策略
+- **"直接生成"** — 确认所有策略，进入 Phase 3
+
+用户确认后生成的 shot list 保存在 `illustrations/shot-list.md`。
 
 ---
 
@@ -222,10 +233,10 @@ fi
 
 ### 3.2 调用 image-2 服务
 
-使用 `scripts/generate-illustration.mjs` 脚本（Node.js 18+，零依赖）：
+使用 `scripts/generate-illustration.py` 脚本（Python 3.9+，依赖 requests）：
 
 ```bash
-node skills/grindraft-illustrate/scripts/generate-illustration.mjs \
+python skills/grindraft-illustrate/scripts/generate-illustration.py \
   --prompt "<英文prompt>" \
   --output "articles/{标题}_{日期}/illustrations/{序号}-{主题}.png" \
   --size "1024x576"
