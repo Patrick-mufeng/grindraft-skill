@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>磨稿 · 状态看板</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg-deep:#0E1015;--bg-surface:#191C22;--bg-elevated:#21252C;--bg-hover:#2A2E37;--border:#2E333D;--text-primary:#E6E3DA;--text-secondary:#9A9CA3;--text-muted:#5D6068;--amber:#F5A623;--amber-glow:rgba(245,166,35,0.12);--teal:#26C6B0;--teal-glow:rgba(38,198,176,0.12);--rose:#E85D75;--stg-draft:#6B7280;--stg-humanize:#60A5FA;--stg-illustrate:#A78BFA;--stg-cover:#F59E0B;--stg-format:#34D399;--stg-predict:#F472B6;--stg-publish:#10B981;--font-display:"Playfair Display",Georgia,"Times New Roman",serif;--font-body:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;--font-mono:"JetBrains Mono","SF Mono","Fira Code",monospace;--space-sm:8px;--space-md:16px;--space-lg:24px;--radius-sm:6px;--radius-md:10px;--radius-lg:16px;--shadow-card:0 1px 3px rgba(0,0,0,0.3);--ease-out:cubic-bezier(0.16,1,0.3,1);--transition:0.25s var(--ease-out)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px;background:var(--bg-deep);color:var(--text-primary);font-family:var(--font-body);line-height:1.6}
+body{margin:0;padding:20px}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+h1,h2{font-family:var(--font-display);font-weight:600;letter-spacing:-0.01em}
+h1{font-size:1.8rem;font-weight:700}  h2{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-muted)}
+.grid{display:grid;grid-template-columns:280px 1fr;gap:20px;max-width:1440px;margin:0 auto}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+header{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:4px;max-width:1440px;margin-left:auto;margin-right:auto}
+header .sub{font-family:var(--font-display);font-style:italic;font-size:0.88rem;color:var(--text-muted)}
+.header-meta{display:flex;align-items:center;gap:16px;font-size:0.78rem;color:var(--text-muted)}
+.btn{background:transparent;border:1px solid var(--border);color:var(--text-secondary);padding:6px 14px;border-radius:var(--radius-sm);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:0.78rem;font-family:var(--font-body)}
+.btn:hover{background:var(--bg-hover)}
+.card{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;margin-bottom:16px}
+.card-h{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.card-h .i{width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius-sm);background:var(--bg-elevated);font-size:1rem}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.si{text-align:center;padding:8px;background:var(--bg-elevated);border-radius:var(--radius-sm)}
+.si .vl{font-family:var(--font-display);font-size:1.5rem;font-weight:700;line-height:1.1}
+.si .l{font-size:0.62rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-muted);margin-top:2px}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:0.75rem;font-weight:500}
+.badge.cs{background:var(--amber-glow);color:var(--amber);border:1px solid rgba(245,166,35,0.2)}
+.badge.cal{background:var(--teal-glow);color:var(--teal);border:1px solid rgba(38,198,176,0.2)}
+.cd{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px}
+.cd.r{background:var(--rose)}.cd.y{background:var(--amber)}.cd.g{background:var(--teal)}
+.tr{display:flex;align-items:center;justify-content:space-between;padding:4px 0}
+.tr .d{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}
+.tr .d.g{background:var(--teal)}.tr .d.y{background:var(--amber)}.tr .d.t{background:var(--text-muted)}
+.tr .c{font-family:var(--font-display);font-weight:600}
+.sc{overflow-x:auto;padding-bottom:8px}
+.flow{display:flex;gap:12px;min-width:max-content}
+.stg{display:flex;flex-direction:column;gap:8px;min-width:130px;position:relative}
+.stg::after{content:"";position:absolute;right:-8px;top:24px;width:8px;height:2px;background:var(--border)}.stg:last-child::after{display:none}
+.stl{font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:4px 10px;border-radius:4px;width:fit-content}
+.stl.d{background:rgba(107,114,128,0.15);color:var(--stg-draft)}
+.stl.h{background:rgba(96,165,250,0.15);color:var(--stg-humanize)}
+.stl.i{background:rgba(167,139,250,0.15);color:var(--stg-illustrate)}
+.stl.c{background:rgba(245,158,11,0.15);color:var(--stg-cover)}
+.stl.f{background:rgba(52,211,153,0.15);color:var(--stg-format)}
+.stl.p{background:rgba(244,114,182,0.15);color:var(--stg-predict)}
+.stl.b{background:rgba(16,185,129,0.15);color:var(--stg-publish)}
+.ac{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;position:relative;overflow:hidden;transition:var(--transition)}
+.ac:hover{background:var(--bg-hover);transform:translateY(-1px)}
+.ac .ind{position:absolute;left:0;top:0;bottom:0;width:3px}
+.ac .t{font-size:0.82rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ac .m{font-size:0.68rem;color:var(--text-muted);margin-top:2px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:768px){.g2{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:0.82rem}
+th{text-align:left;padding:8px 12px;font-size:0.65rem;font-weight:600;text-transform:uppercase;color:var(--text-muted);border-bottom:1px solid var(--border)}
+td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text-secondary)}
+.bb{display:inline-block;padding:1px 8px;border-radius:4px;font-weight:600;font-size:0.75rem}
+.bb.S{background:rgba(245,166,35,0.2);color:var(--amber)}
+.bb.A{background:rgba(38,198,176,0.2);color:var(--teal)}
+.bb.B{background:rgba(96,165,250,0.2);color:#60A5FA}
+.trr{color:var(--teal);font-weight:500}.tw{color:var(--text-muted)}
+.cg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ci{text-align:center;padding:12px;background:var(--bg-elevated);border-radius:var(--radius-sm)}
+.ci .vl{font-size:1.4rem}
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mi{padding:8px 12px;background:var(--bg-elevated);border-radius:var(--radius-sm);display:flex;justify-content:space-between;align-items:center}
+.mi .l{font-size:0.65rem;color:var(--text-muted)}
+.mi .v{font-family:var(--font-display);font-weight:600;font-size:1rem}
+.cl{display:flex;flex-direction:column;gap:8px}
+.cli{display:flex;align-items:flex-start;gap:8px;padding:8px 12px;background:var(--bg-elevated);border-radius:var(--radius-sm);font-size:0.82rem;color:var(--text-secondary);line-height:1.5}
+.cli .cb{width:16px;height:16px;border:1.5px solid var(--border);border-radius:3px;flex-shrink:0;margin-top:2px}
+.cli.hl{border-left:3px solid var(--amber)}
+.cli strong{color:var(--text-primary)}
+.ps{flex:1;text-align:center;padding:8px;background:var(--bg-elevated);border-radius:var(--radius-sm)}
+.ps .vl{font-size:1.1rem}
+.ps .l{font-size:0.6rem;text-transform:uppercase;color:var(--text-muted);margin-top:4px}
+footer{text-align:center;padding:32px 0;font-size:0.7rem;color:var(--text-dim);border-top:1px solid var(--border);margin-top:4px}
+@keyframes f{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.card,.sc{animation:f 0.4s var(--ease-out) both}
+.card:nth-child(1){animation-delay:0.05s}.card:nth-child(2){animation-delay:0.1s}.card:nth-child(3){animation-delay:0.15s}
+.sc{animation-delay:0.1s}
+</style>
+</head>
+<body>
+<script src="kanban-data.js"></script>
+<header style="max-width:1440px;margin:0 auto 4px">
+<div><h1 style="margin:0">磨稿</h1><div class="sub">Grindraft · 状态看板</div></div>
+<div class="header-meta"><span id="rd">—</span><button class="btn" id="br"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;flex-shrink:0"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>刷新</button></div>
+</header>
+<div class="grid" id="app"></div>
+<footer>磨稿 v1.0 · 页面一次性生成 | 数据由 kanban-data.js 提供</footer>
+<script>
+(function(){var x=window.KANBAN_DATA||{m:{},s:{},c:{},a:[],pp:{},r:[],cl:{},bl:{},mt:{}};var s=x.s||{},c=x.c||{},a=x.a||[],pp=x.pp||{},r=x.r||{},cl=x.cl||{},bl=x.bl||{},mt=x.mt||{};
+function f(v,n){return v!==null&&v!==undefined?v:(n||"—")}
+function clr(k){var m={r:["cd r","极低"],y:["cd y","低"],g:["cd g","中"],p:["cd purple","较高"]};var e=m[k]||["cd y","无"];return"<span class=\""+e[0]+"\"></span>"+e[1]}
+function sl(stg){var m={draft:["待改","d"],humanize:["去味中","h"],humanized:["去味完成","h"],illustrating:["配图中","i"],illustrated:["配图完成","i"],cover:["封面中","c"],cover_done:["封面完成","c"],format:["排版中","f"],formatted:["已排版","f"],predict:["预测中","p"],predicted:["已预测","p"],published:["已发","b"]};return m[stg]||[stg,"d"]}
+var pr={draft:1,humanize:2,humanized:2.5,illustrating:3,illustrated:3.5,cover:4,cover_done:4.5,format:5,formatted:5.5,predict:6,predicted:6.5,published:7};
+var STG=[{k:"draft",l:"待改",c:"d"},{k:"humanize",l:"去味",c:"h"},{k:"illustrate",l:"配图",c:"i"},{k:"cover",l:"封面",c:"c"},{k:"format",l:"排版",c:"f"},{k:"predict",l:"预测",c:"p"},{k:"publish",l:"发布",c:"b"}];
+function render(){var rd=window.KANBAN_DATA||{};x=rd;var s=rd.s||{},c=rd.c||{},a=rd.a||[],pp=rd.pp||{},r=rd.r||[],cl=rd.cl||{},bl=rd.bl||{},mt=rd.mt||{};var ts=x.m.g||x.m.d||new Date().toISOString().slice(0,10);document.getElementById("rd").textContent="最后刷新: "+ts;
+var mc=s.mode==="calibration"?"badge cal":"badge cs";var ml=s.mode==="calibration"?"校准模式":"Cold Start";
+var h="";
+// Sidebar - Status
+h+="<div><div class=\"card\"><div class=\"card-h\"><span class=\"i\">📊</span><h2>基本状态</h2></div><div class=\"sg\">";
+h+="<div class=\"si\"><div class=\"vl\">"+f(s.cs,0)+"</div><div class=\"l\">校准样本</div></div>";
+h+="<div class=\"si\"><div class=\"vl\">"+f(s.hs,0)+"</div><div class=\"l\">历史文章</div></div>";
+h+="<div class=\"si\"><div class=\"vl\">"+f(s.pr,0)+"</div><div class=\"l\">待复盘</div></div>";
+h+="<div class=\"si\"><div class=\"vl\">"+f(s.cc,0)+"</div><div class=\"l\">选题池</div></div></div>";
+h+="<div style=\"display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:8px;border-top:1px solid var(--border)\"><div class=\""+mc+"\">"+ml+"</div><div style=\"font-size:0.72rem;color:var(--text-muted)\">"+clr(s.confidence||"r")+"</div></div>";
+if(s.rv)h+="<div style=\"margin-top:6px;font-size:0.72rem;color:var(--text-muted)\">Rubric "+s.rv+"</div>";
+h+="</div>";
+// Sidebar - Topics
+h+="<div class=\"card\"><div class=\"card-h\"><span class=\"i\">📝</span><h2>选题池</h2></div>";
+h+="<div class=\"tr\"><span><span class=\"d g\"></span>待写 (tier1)</span><span class=\"c\">"+f(c.t1,0)+"</span></div>";
+h+="<div class=\"tr\"><span><span class=\"d y\"></span>备选 (tier2)</span><span class=\"c\">"+f(c.t2,0)+"</span></div>";
+h+="<div class=\"tr\"><span><span class=\"d t\"></span>暂存 (tier3)</span><span class=\"c\">"+f(c.t3,0)+"</span></div></div>";
+// Sidebar - Prediction
+h+="<div class=\"card\"><div class=\"card-h\"><span class=\"i\">📈</span><h2>预测池</h2></div>";
+h+="<div class=\"ps\"><div class=\"vl\">"+f(pp.pu,0)+"</div><div class=\"l\">已预测·未发布</div></div>";
+h+="<div class=\"ps\" style=\"margin-top:6px\"><div class=\"vl\">"+f(pp.pp,0)+"</div><div class=\"l\">待复盘</div></div>";
+h+="<div class=\"ps\" style=\"margin-top:6px\"><div class=\"vl\">"+f(pp.rc,0)+"</div><div class=\"l\">已复盘</div></div></div></div>";
+// Main
+h+="<div><div class=\"card\" style=\"border-radius:var(--radius-lg)\"><div style=\"display:flex;justify-content:space-between;margin-bottom:16px\"><h2 style=\"margin:0\">草稿流水线</h2><span style=\"font-size:0.78rem;color:var(--text-muted)\">"+a.length+" 篇文章</span></div><div class=\"sc\"><div class=\"flow\">";
+var sm={};STG.forEach(function(s){sm[s.k]=[]});a.forEach(function(a){var p=pr[a.stage]||1;var sk=STG[Math.min(Math.floor(p),6)].k;if(!sm[sk])sm[sk]=[];sm[sk].push(a)});
+STG.forEach(function(s){var aa=sm[s.k]||[];h+="<div class=\"stg\"><span class=\"stl "+s.c+"\">"+s.l+"</span>";if(!aa.length)h+="<div style=\"font-size:0.7rem;color:var(--text-dim);padding:6px 0;font-style:italic\">—</div>";else aa.forEach(function(a){var si=sl(a.stage);h+="<div class=\"ac\"><div class=\"ind\" style=\"background:var(--stg-"+s.c+")\"></div><div class=\"t\">"+a.title+"</div><div class=\"m\">"+si[0]+"</div></div>"});h+="</div>"});
+h+="</div></div></div>";
+// Retros
+if(r.length){h+="<div class=\"card\"><div class=\"card-h\"><span class=\"i\">🔍</span><h2>待复盘</h2></div><table><thead><tr><th>文章</th><th>Bucket</th><th>发布天数</th><th>可复盘</th></tr></thead><tbody>";r.forEach(function(r){h+="<tr><td>"+r.article+"</td><td><span class=\"bb "+r.bucket+"\">"+r.bucket+"</span></td><td>"+r.days+"</td><td>"+(r.can_retro?"<span class=\"trr\">✅ 可复盘</span>":"<span class=\"tw\">⏳ 还差 "+(3-r.days)+" 天</span>")+"</td></tr>"});h+="</tbody></table></div>";}
+// Calibration
+h+="<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:16px\">";
+h+="<div class=\"card\" style=\"margin-bottom:0\"><div class=\"card-h\"><span class=\"i\">🎯</span><h2>校准状况</h2></div><div class=\"cg\"><div class=\"ci\"><div class=\"vl\">"+f(cl.cb,0)+"</div><div class=\"l\">连续同向偏差</div></div><div class=\"ci\"><div class=\"vl\">"+f(cl.ed,0)+"</div><div class=\"l\">极端偏差</div></div></div>"+(cl.sb?"<div style=\"margin-top:8px;padding:8px;background:var(--amber-glow);border-radius:var(--radius-sm);font-size:0.78rem;color:var(--amber);text-align:center\">建议升级 Rubric</div>":"")+"</div>";
+var hb=bl.ar!==null||bl.sr!==null||bl.br!==null||bl.cr!==null;
+if(hb){h+="<div class=\"card\" style=\"margin-bottom:0\"><div class=\"card-h\"><span class=\"i\">📊</span><h2>基准指标</h2></div><div class=\"mg\">";var its=[{l:"平均阅读",v:bl.ar},{l:"分享率",v:bl.sr,f:function(x){return x+"%"}},{l:"收藏率",v:bl.br,f:function(x){return x+"%"}},{l:"留言率",v:bl.cr,f:function(x){return x+"%"}}];its.forEach(function(it){h+="<div class=\"mi\"><span class=\"l\">"+it.l+"</span><span class=\"v"+(it.v===null?"\" style=\"color:var(--text-muted);font-style:italic;font-family:var(--font-body);font-weight:400;font-size:0.82rem":"")+"\">"+(it.v!==null?it.f?it.f(it.v):it.v:"—")+"</span></div>"});h+="</div></div>";}
+h+="</div>";
+// Maintenance
+var hm=mt.sgd!==null||mt.sc>0||mt.ltd!==null;
+if(hm){h+="<div class=\"card\"><div class=\"card-h\"><span class=\"i\">🧹</span><h2>维护提醒</h2></div><div class=\"cl\">";if(mt.sgd!==null&&mt.sgd>10&&mt.sga>=3)h+="<div class=\"cli hl\"><span class=\"cb\"></span><div>style_guide.md 最后更新于 <strong>"+mt.sgd+" 天前</strong>（你改了 "+mt.sga+" 篇稿子但没更新 style_guide）</div></div>";else if(mt.sgd!==null)h+="<div class=\"cli\"><span class=\"cb\"></span><div>style_guide.md 最后更新于 "+mt.sgd+" 天前</div></div>";if(mt.sc>0)h+="<div class=\"cli hl\"><span class=\"cb\"></span><div>candidates.md 有 <strong>"+mt.sc+" 条</strong> >30 天未处理的选题（可能过时了）</div></div>";if(mt.ltd!==null&&mt.ltd>7)h+="<div class=\"cli hl\"><span class=\"cb\"></span><div>上次抓热点已是 <strong>"+mt.ltd+" 天前</strong>——热点池可能过期了</div></div>";h+="</div></div>";}
+h+="</div>";
+document.getElementById("app").innerHTML=h;
+}
+document.getElementById("br").addEventListener("click",function(){render()});render();
+})();
+</script>
+</body>
+</html>

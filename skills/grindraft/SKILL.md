@@ -1,4 +1,4 @@
----
+﻿---
 name: grindraft
 description: |
   磨稿——把公众号长文写作变成可校准预测循环。**从找热点到复盘，全流程闭环**：抓热点 → 聊选题 → AI 写初稿 → 去 AI 味 → 配图 → 设计封面 → 排版 HTML → 盲预测 → 发布登记 → 数据复盘 → 进化 rubric。适用公众号长文（后续扩展小红书 / 抖音分发）。触发词："磨稿"/"初始化"/"抓热点"/"找选题"/"写文章"/"去 AI 味"/"配图"/"排版"/"启动预测"/"已发布"/"复盘"/"升级 rubric"/"推荐选题"/"状态"。
@@ -57,15 +57,38 @@ AI 用 `Read` 工具读文件头 3 行即可拿到 6 个核心指标——这是
 | 🟡 **写作操作** | "写文章""去 AI 味""配图""排版""找选题""抓热点" | **中等** | 先读 STATUS.md 前 3 行确认进度 → 再读 `style_guide.md` + `rubric_notes.md`（按需） |
 | 🔴 **校准操作** | "启动预测""复盘""升级 rubric" | **完整** | 先读 STATUS.md 前 3 行 → 再读 `.grindraft-state.json`（权重/bucket/pending_retros）→ 再读 `articles/` 下最近 2 篇的 prediction.md |
 
-### ⚠️ STATUS.md 过期检测（轻量版）
 
-QUICK_STATUS 锚点已含 `最后复盘` 和 `最后发布` 日期。如果时间看起来异常（如显示 8 天前但你刚操作过），提示用户刷新：
+### 🔒 Pre-flight: 操作前新鲜度校验
 
-```
-⚠️ STATUS.md 快照显示最后复盘 05-28（9 天前），可能过期。说"状态"刷新。
-```
+**🟡 写作操作 和 🔴 校准操作 前必须执行以下检查：**
 
-> **不需要**为此额外读 state.json——QUICK_STATUS 已自包含日期。过期检测是"顺便看一眼"，不是单独步骤。
+1. 获取系统日期 → 记作 `$today`
+2. 读 STATUS.md 前 3 行 → 解析 QUICK_STATUS 中的 `最后复盘` 和 `最后发布`
+3. 用 `$today` 与这两个日期做差 → 如果任一项 > 7 天：
+
+   ```
+   ⚠️ STATUS.md 快照可能过期（最后复盘/发布 >7 天前）。建议先刷新看板确保数据准确。
+   说"状态" → 刷新后重新操作。
+   ```
+
+4. 用户确认后，继续操作
+
+### ⚠️ STATUS.md 过期检测（硬校验）
+
+QUICK_STATUS 锚点已含 `最后复盘` 和 `最后发布` 日期。**每次读取 STATUS.md 时，必须用系统日期与 QUICK_STATUS 中的日期做机械比较：**
+
+- 用当天日期 - `最后复盘` 日期 > 3 天 → 判定可能过期
+- 用当天日期 - `最后发布` 日期 > 3 天 → 判定可能过期
+
+过期时执行：
+1. 读 `.grindraft-state.json` 对比 `last_retro_at` / `last_published_at` 确认
+2. 确实过期 → 提示刷新：
+
+   ```
+   ⚠️ STATUS.md 快照显示最后复盘 05-28（9 天前），已过期。说"状态"刷新。
+   ```
+
+3. 未过期（QUICK_STATUS 日期格式异常等误报）→ 忽略，继续
 
 ### 文件不存在时的处理
 
@@ -141,9 +164,10 @@ Windows:    date /t
 | "去 AI 味" / "humanize" / "去味" / "修一下" | `grindraft-humanize` | 有初稿 |
 | "配图" / "生成配图" / "文章插图" / "illustrate" / "做插图" | `grindraft-illustrate` | final.md 存在 |
 | "设计封面" / "帮我做封面" / "生成封面" / "公众号封面" / "封面" | `grindraft-cover` | 已改完稿（需 Node.js 可出 PNG） |
+| "打磨标题" / "起标题" / "polish" / "封面提示词" / "标题+封面" | `grindraft-polish` | 已改完稿 |
 | "排版" / "format" / "转 HTML" / "公众号排版" | `grindraft-format` | 有终稿 |
 | "启动预测" / "predict" / "写预测日志" | `grindraft-predict` | 已 init + 有最终稿（预测后可直接发URL登记） |
-| "已发布" / "publish" / "发布链接是 X" / "发出去了" | `grindraft-predict` | 对应预测文件存在（预测时已含发布衔接） |
+| "已发布" / "publish" / "发布链接是 X" / "发出去了" | `grindraft-publish` | 对应预测文件存在 |
 | "复盘" / "retro" / "T+N 天数据来了" / "看数据" | `grindraft-retro` | 对应预测文件存在 + 已发布 |
 | "构造受众画像" / "persona" / "我的读者是谁" | `grindraft-persona` | 已 init；有复盘数据 |
 | "升级 rubric" / "bump rubric" / "更新公式" | `grindraft-bump` | 校准池 ≥ MIN_SAMPLES_FOR_BUMP |

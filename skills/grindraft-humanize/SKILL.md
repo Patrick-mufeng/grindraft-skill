@@ -245,6 +245,8 @@ allowed-tools:
 - ❌ style_guide 未同步 → **立即补写**
 - 重写后再次 re-read 确认 → 仍不通过 → 输出 `❌ 自检失败，请手动检查`
 
+**自检通过后，按全局规则刷新 `STATUS.md`**（见主 SKILL.md `STATUS.md` 自动刷新段）。获取当天日期 → 读 state.json → 扫 articles/ 下所有文章文件夹 → 渲染看板 → 写入 STATUS.md。
+
 ## Key Rules
 
 1. **通用规则优先**——先跑 L1-L4 通用版，再叠用户个人禁区

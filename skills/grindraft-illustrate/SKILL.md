@@ -1,4 +1,4 @@
----
+﻿---
 name: grindraft-illustrate
 description: |
   正文配图生成。读文章自动分析出配图策略（shot list），用小黑怪诞手绘风格逐张生成 16:9 横版插图。
@@ -76,8 +76,9 @@ Phase 3: 逐张生成（构建英文 prompt → Node.js 脚本调 API → 保存
   ↓
 Phase 4: QA 检查（对照 checklist，失败的重生成）
   ↓
-Phase 5: 交付汇总
+Phase 5: 占位符嵌入终稿（在 final.md 对应位置插入占位图）
   ↓
+Phase 6: 交付汇总
 回到主流程: "设计封面"
 ```
 
@@ -315,9 +316,40 @@ python ... --fallback-url https://备选地址/
 
 由于 API 生图无法像 Codex 工具那样精确控制，QA 以人工目测为主。AI 根据返回的图片内容做初步判断，标注可疑项供用户确认。
 
+## Phase 5 · 占位符嵌入终稿
+
+### 5.1 确定嵌入位置
+
+按 shot-list.md 中每张图的"用途"定位插入点：
+
+| shot 位置 | 嵌入方式 |
+|---|---|
+| "第 X 段后" | 在 final.md 中第 X 段末尾另起一行插入占位图 |
+| "标题下方" | 在 frontmatter 后的正文第一行 |
+| "第 X 部分末尾" | 在该部分最后一个段落之后 |
+
+### 5.2 嵌入占位图
+
+用 Write 工具在 final.md 的对应位置插入：
+
+```markdown
+![插图占位：{shot主题}](https://bee-reg.ab.imagency.cn/e/33c0a7973f78f4c4997c6d937824b995.png)
+*↑ 用户可自行替换为 illustrations/ 目录下的实际配图*
+```
+
+### 5.3 写入规则
+
+- **不替换正文已有内容**——只在段落之间插入，不在已有句子内打断
+- **不嵌入生成的 PNG 路径**——只用上面的远程占位 URL
+- 占位图 alt text 标注 shot 主题，方便用户知道这里应该放什么
+
+### 5.4 自检
+
+重新读取 final.md，确认占位图已写入所有 shot 位置。漏写的补充写入。
+
 ---
 
-## Phase 5 · 交付汇总
+## Phase 6 · 交付汇总
 
 ```
 ✅ 配图完成
@@ -329,7 +361,25 @@ python ... --fallback-url https://备选地址/
 | 3 | 03-xxx.png | 第X段后 | ⚠️ 重试1次 |
 
 保存路径：articles/{标题}_{日期}/illustrations/
+
+📌 占位图已嵌入 final.md，用户从 illustrations/ 目录取出实际图片替换占位 URL 即可
 配图策略：articles/{标题}_{日期}/illustrations/shot-list.md
+
+---
+
+## Phase 7 · 自检 — 验证写入完整性
+
+重新读取 `illustrations/` 目录，确认所有 PNG 文件已正确保存，shot-list.md 已写入。
+
+**自检通过后，按全局规则刷新 `STATUS.md`**（见主 SKILL.md "STATUS.md 自动刷新"段）。获取当天日期 → 读 state.json → 扫 articles/ 下所有文章文件夹 → 渲染看板 → 写入 STATUS.md。
+
+#### 自检输出格式
+
+```
+✅ 配图自检通过，STATUS.md 已刷新
+```
+
+---
 ```
 
 ---
@@ -362,9 +412,10 @@ articles/{标题}_{日期}/
 生成前的策略输出要短而准。生成后的交付要包含：
 
 - 生成了几张
-- 每张图的用途
-- 保存路径
+- 每张图的用途（已用占位图标记在 final.md 中）
+- 保存路径（illustrations/ 目录）
 - 哪些图最稳，哪些图是可选
+- 用户手动替换 final.md 中占位 URL 为本地图片路径即可
 
 **不要长篇解释风格理论**；让图自己说话。
 
@@ -378,6 +429,7 @@ articles/{标题}_{日期}/
 4. **小黑必须是动作主体**——不只是装饰
 5. **API 生图不可控时降低期望**——gpt-image-2 等 API 模型的风格还原度有限，接受合理偏差
 6. **先出策略再生成**——未经用户确认的 shot list 不要直接生图（除非用户说"直接生成"）
+7. **不直接嵌入生成图片到 final.md**——只插入占位 URL，实际图片由用户手动替换
 
 ## Integration
 

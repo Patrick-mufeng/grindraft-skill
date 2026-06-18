@@ -1,4 +1,4 @@
----
+﻿---
 name: grindraft-cover
 description: |
   公众号封面设计。读文章自动分析情绪+领域，从40套模板推荐3个，生成预览HTML和PNG。触发词："设计封面"/"帮我做封面"/"生成封面"/"公众号封面"/"封面"。
@@ -228,6 +228,8 @@ node articles/{标题}_{日期}/cover/merge.js         # Step 2
 - 最多 5 轮，超限建议换模板
 
 改完后用户说"可以了" → 回到主流程，自动提示"排版？"
+
+**自检通过后，按全局规则刷新 `STATUS.md`**（见主 SKILL.md "STATUS.md 自动刷新"段）。获取当天日期 → 读 state.json → 扫 articles/ 下所有文章文件夹 → 渲染看板 → 写入 STATUS.md。
 
 ---
 

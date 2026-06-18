@@ -185,6 +185,8 @@ allowed-tools:
 
 如果用户不选——全部保留到 `articles/{标题}_{日期}/polish.md` 供后续参考。
 
+**落盘完成后，按全局规则刷新 `STATUS.md`**（见主 SKILL.md "STATUS.md 自动刷新"段）。获取当天日期 → 读 state.json → 扫 articles/ 下所有文章文件夹 → 渲染看板 → 写入 STATUS.md。
+
 ---
 
 ## Key Rules

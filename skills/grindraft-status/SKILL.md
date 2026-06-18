@@ -1,4 +1,4 @@
----
+﻿---
 name: grindraft-status
 description: |
   磨稿状态看板。显示当前模式 / rubric 版本 / 校准进度 / 待复盘 / 选题池状态。自动获取当天日期计算复盘窗口。触发词："状态"/"今天干什么"/"进度怎么样"/"到哪了"。
@@ -13,6 +13,8 @@ allowed-tools:
 ## Overview
 
 读 `.grindraft-state.json` + `candidates.md` + `articles/` → 渲染状态看板 → 写入 `STATUS.md` 并展示。
+
+首次运行时，从 `templates/kanban.html` 复制静态页面到用户项目根目录为 `kanban.html`（如已存在则跳过）。每次刷新时，只生成 `kanban-data.js` 写入用户项目根目录（内含 `window.KANBAN_DATA` 全局变量，~0.5KB）。用户打开 `kanban.html` 后自动加载同目录下的 `kanban-data.js` 展示数据，刷新浏览器即可更新。
 
 ## 看板模板
 
