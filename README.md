@@ -1,142 +1,108 @@
-# 磨稿 / Grindraft
+﻿# 磨稿 / Grindraft
 
-> 公众号写作的全流程 Claude Code 插件——**写稿、去 AI 味、设计封面、一键排版、校准复盘**，16 个 skill 全搞定。
+> Claude Code 插件 · 18 个子 skill · 把公众号写作变成可进化的校准系统
 
 [![Claude Code Plugin](https://img.shields.io/badge/Claude%20Code-Plugin-blue)](https://claude.ai)
 
 ---
 
-## 三大核心能力
+## 一句话
 
-### 🎨 公众号封面设计 — `grindraft-cover`
-
-读完文章自动分析情绪 + 领域，从 **40 套模板**里推荐 3 个最合适的，生成预览 HTML 和 PNG。
-
-| 模板系列 | 举例 |
-|----------|------|
-| 科技硬核 | 赛博霓虹、蓝图、全息、终端复古 |
-| 设计美学 | 瑞士极简、包豪斯、孟菲斯、波普 |
-| 质感氛围 | 暗黑奢华、水彩、墨韵、玻璃拟态 |
-| 创意实验 | 蒸汽波、像素艺术、故障艺术、Y2K |
-
-说"设计封面" → AI 自动匹配 → 确认 → 出图。支持改稿循环（换文案/调色/换模板），双击预览 HTML 就能看到效果。
-
-### 📐 一键公众号排版 — `grindraft-format`
-
-Markdown 写完 → 说"排版" → 自动出公众号兼容 HTML。
-
-- 自动设计主题色板 + 排版风格，每次都不一样
-- 支持手机预览（双击 HTML 在模拟器里看效果）
-- 一键复制到公众号后台
-- 内置预览版（带"复制到公众号"按钮）
-- 遵守公众号 CSS 白名单，不踩坑
-
-### 📊 校准闭环 — 越写越准
-
-每篇文章 7 维盲打分 → 发布 → T+3 天复盘对比真实数据 → 评分公式自动进化。
+**不是帮你写文章，是帮你建立一套"每写一篇，下一篇就更准"的写作系统。**
 
 ---
 
-## 安装
+## 它和普通 AI 写作工具有什么区别？
 
-```bash
-claue plugin install github.com/Patrick-mufeng/grindraft-skill
-```
+普通 AI 写作：你让它写 → 它写 → 写完了。下次再写，它不记得你上一篇阅读量 3000 还是 300。
 
-或手动复制需要的 skill 到 `.claude/skills/`。
-
----
-
-## 快速开始
+磨稿：**每一篇文章都变成数据，数据反过来校准你的写作判断。**
 
 ```
-磨稿初始化          → 建项目骨架
-抓热点              → 拉 AI 圈今日资讯
-找选题              → 聊出一个角度
-写文章              → AI 出初稿
-去 AI 味            → 四层自检
-设计封面            → 40 套模板，自动匹配
-排版                → Markdown → 公众号 HTML，一键
-启动预测            → 7 维盲打分（⚠️ 写完不能改）
-已发布              → 登记 URL
-复盘                → T+3 天数据回收
-状态                → 看板总览
+写 → 预测 → 发布 → 复盘 → 进化
+  ↓                        ↑
+  └──── 更准的评分系统 ────┘
 ```
 
 ---
 
-## 🎨 封面设计详解
+## 系统全貌
 
 ```
-说"设计封面"
-  ↓
-AI 读文章 → 三维分析（情绪 × 领域 × IP）
-  ↓
-推荐 3 个模板（带色板 + 推荐理由）
-  ↓
-提取封面文案（标题 ≤15字 + 描述 + 标签）
-  ↓
-生成预览 HTML（2.35:1 大图 + 1:1 小图，左右并排）
-  ↓
-可选 PNG 导出（需 Node.js + puppeteer + canvas）
-  ↓
-改稿循环（换文案/换配色/换模板，最多 5 轮）
+┌─────────────────────────────────────────────────────────────────┐
+│ 第一阶段：发现 + 选题                                              │
+│   "抓热点" → ①trends → "找选题" → ②seed                          │
+│                       ↓                                            │
+│                   candidates.md（选题池）                           │
+├─────────────────────────────────────────────────────────────────┤
+│ 第二阶段：写作 + 打磨                                              │
+│   "写文章" → ③write → "去AI味" → ④humanize → "配图" → ⑤illustrate  │
+│                       ↓                     ↓                        │
+│                  draft.md              final.md                      │
+│                       ↓                                              │
+│   "设计封面" → ⑥cover → "打磨标题" → ⑥polish（可选）                 │
+│                       ↓                                              │
+│              cover/ + 标题候选                                        │
+├─────────────────────────────────────────────────────────────────┤
+│ 第三阶段：排版                                                      │
+│   "排版" → ⑦format                                                  │
+│                       ↓                                              │
+│          output.html + output-preview.html                           │
+├─────────────────────────────────────────────────────────────────┤
+│ 第四阶段：校准闭环                                                  │
+│   "启动预测" → ⑧predict（不可修改）                                   │
+│   "已发布"   → ⑨publish（登记URL）                                    │
+│   T+3 "复盘"  → ⑩retro                                              │
+│   "升级rubric" → ⑪bump（全量重打+跨模型审核）                          │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-**40 套模板覆盖 5 种情绪 × 6 个领域**：冷峻/温暖/激昂/轻松/严肃 × 科技/商业/生活/教育/娱乐/人文。每套模板包含色板、字体、布局规则、CSS 代码片段。用户也可以指定具体模板名（比如"用赛博霓虹"）跳过自动匹配。
 
-## 📐 排版详解
+## 路由表（触发词 → 子 skill）
 
-```
-说"排版"
-  ↓
-读 Markdown 终稿（优先 scripts/，fallback drafts/）
-  ↓
-自动提醒：去 AI 味？做封面？
-  ↓
-AI 设计全新主题色板（不重复使用已有主题）
-  ↓
-生成两个文件：
-  · 清洁版 HTML → 直接粘贴公众号后台
-  · 预览版 HTML → 双击看手机效果 + 一键复制
-  ↓
-完成。下一步 "启动预测"
-```
+| 用户说 | 调用 skill | 功能一句话 | 前置条件 |
+|--------|-----------|-----------|---------|
+| "初始化" / "磨稿初始化" | `grindraft-init` | 首次搭项目骨架，判定 cold-start/calibration 模式 | 无（入口） |
+| "抓热点" / "今天有什么可写的" | `grindraft-trends` | 从 aihot API 抓 AI 圈精选资讯，写入选题池 | 已 init |
+| "找选题" / "聊选题" | `grindraft-seed` | 深度对话收敛到一个具体写作角度 | 已 init |
+| "写文章" / "帮我写一篇" | `grindraft-write` | AI 出初稿（3 种参与度 low/medium/high） | 有选题 |
+| "去 AI 味" / "修一下" | `grindraft-humanize` | 四层去 AI 味（L1 硬规则→L2 逻辑→L3 节奏→L4 活人感） | 有初稿 |
+| "配图" / "生成配图" | `grindraft-illustrate` | 小黑风格正文插图，API 生图 + shot-list | final.md 存在 |
+| "设计封面" / "封面" | `grindraft-cover` | 读文章自动匹配 40 套模板，生成预览 HTML + PNG | 已改完稿 |
+| "打磨标题" / "起标题" | `grindraft-polish` | 生成标题候选 + 简介 + 封面提示词 | 已改完稿 |
+| "排版" / "转 HTML" | `grindraft-format` | AI 设计主题色板，Markdown → 公众号兼容 HTML | 有终稿 |
+| "启动预测" / "predict" | `grindraft-predict` | 7 维盲打分 + bucket 押注，写完即锁定（不可修改） | 已排版 |
+| "已发布" / "发布链接是..." | `grindraft-publish` | 登记 URL，更新状态 | 已预测 |
+| "复盘" | `grindraft-retro` | T+3 数据回收 → 逐条验证预测假设 → 提炼观察 | 已发布 ≥3 天 |
+| "状态" / "看板" | `grindraft-status` | 渲染看板 → STATUS.md + kanban.html + kanban-data.js | 已 init |
+| "推荐选题" | `grindraft-recommend` | 按 rubric 排序推荐选题池 | 有选题池 |
+| "我的读者是谁" | `grindraft-persona` | 从复盘评论数据派生读者画像 | 有复盘数据 |
+| "升级 rubric" | `grindraft-bump` | 全量重打分 + 跨模型独立审核 → 更新权重 | 校准样本 ≥5 篇 |
 
-**排版规范**：适配微信公众号 CSS 白名单、自动 section 嵌套、flex 布局、图片圆角阴影、外链自动转底部引用。之前用过的主题（脉冲、刃、纸墨、构、编、壳等）作为备选，用户说"用上次的主题"即可复用。
 
----
+## 18 个子 skill 清单
 
-## 16 个 Skill
+| 类型 | Skill | 文件位置 |
+|------|-------|---------|
+| 🧭 路由器 | `grindraft` | `skills/grindraft/SKILL.md` |
+| 🚀 入口 | `grindraft-init` | `skills/grindraft-init/SKILL.md` |
+| 🔥 发现 | `grindraft-trends` | `skills/grindraft-trends/SKILL.md` |
+| 💡 选题 | `grindraft-seed` | `skills/grindraft-seed/SKILL.md` |
+| ✍️ 写作 | `grindraft-write` | `skills/grindraft-write/SKILL.md` |
+| 🧹 去味 | `grindraft-humanize` | `skills/grindraft-humanize/SKILL.md` |
+| 🎨 配图 | `grindraft-illustrate` | `skills/grindraft-illustrate/SKILL.md` |
+| 🎴 封面 | `grindraft-cover` | `skills/grindraft-cover/SKILL.md` |
+| ✨ 打磨标题 | `grindraft-polish` | `skills/grindraft-polish/SKILL.md` |
+| 📻 排版 | `grindraft-format` | `skills/grindraft-format/SKILL.md` |
+| 🎯 预测 | `grindraft-predict` | `skills/grindraft-predict/SKILL.md` |
+| 📮 发布 | `grindraft-publish` | `skills/grindraft-publish/SKILL.md` |
+| 📊 复盘 | `grindraft-retro` | `skills/grindraft-retro/SKILL.md` |
+| 👤 受众画像 | `grindraft-persona` | `skills/grindraft-persona/SKILL.md` |
+| ⬆️ 升级 rubric | `grindraft-bump` | `skills/grindraft-bump/SKILL.md` |
+| 💡 推荐选题 | `grindraft-recommend` | `skills/grindraft-recommend/SKILL.md` |
+| 📋 状态看板 | `grindraft-status` | `skills/grindraft-status/SKILL.md` |
+| 🔒 盲打分 | `grindraft-score-blind` | `skills/grindraft-score-blind/SKILL.md` |
 
-| Skill | 触发词 | 做什么 |
-|-------|--------|--------|
-| `grindraft` | 磨稿 | 总路由 + 全局协议 |
-| `grindraft-init` | 初始化 | Onboarding + 创建项目骨架 |
-| `grindraft-trends` | 抓热点 | 从 aihot 拉 AI 圈精选资讯 |
-| `grindraft-seed` | 找选题 | 深度对话，收敛到一个角度 |
-| `grindraft-write` | 写文章 | AI 出初稿（low/medium/high 三种自由度） |
-| `grindraft-humanize` | 去 AI 味 | L1-L4 四层质检体系 |
-| **`grindraft-cover`** | **设计封面** | **40 套模板自动匹配 + HTML/PNG 预览** |
-| `grindraft-polish` | 打磨标题 | 标题候选 + 简介 + 封面提示词 |
-| **`grindraft-format`** | **排版** | **Markdown → 公众号兼容 HTML，一键** |
-| `grindraft-predict` | 启动预测 | 7 维盲打分 + bucket 押注（⚠️ immutable） |
-| `grindraft-publish` | 已发布 | 登记 URL，更新状态 |
-| `grindraft-retro` | 复盘 | T+3 数据回收 + 验证预测 |
-| `grindraft-persona` | 受众画像 | 从留言聚类读者画像 |
-| `grindraft-bump` | 升级 rubric | 公式升级（全量重打 + 跨模型审） |
-| `grindraft-recommend` | 推荐选题 | 选题池按 rubric 排序推荐 |
-| `grindraft-status` | 状态 | 看板：模式、进度、维护提醒 |
-
----
-
-## 三条铁律
-
-1. **盲预测**：预测写完即锁定，不可修改。真实数据只能追加到复盘段。
-2. **升级必须全量重打**：rubric 升级时要对所有历史文章用新公式重排序，≥4/5 一致才通过。
-3. **rubric 是工作台，不是博物馆**：被数据推翻的观察删掉——git history 才是档案。
-
----
 
 ## 7 维评分体系
 
@@ -150,17 +116,137 @@ AI 设计全新主题色板（不重复使用已有主题）
 | **EP** 情绪峰值 | 有没有"卧槽"或鼻子一酸的瞬间 | 分享率 |
 | **SC** 结构闭环 | 开头埋的线结尾有没有收 | 读完后的完整感 |
 
-每维 1-5 分，加权算出 composite，对应阅读量 bucket（S/A/B/C/D/E）。
+每维 1-5 分，加权算 composite 对应阅读量 bucket（S/A/B/C/D/E）。
+
+---
+
+## 用户使用流程（完整版）
+
+### 首次使用
+```
+说"磨稿初始化" → 系统创建项目骨架（STATUS.md / candidates.md / style_guide.md 等）
+```
+
+### 写一篇文章的完整流程
+```
+① "抓热点"          → 获取今日 AI 圈资讯到选题池
+② "找选题"          → 对话确定一个写作角度
+③ "写文章"          → AI 出初稿
+④ "去 AI 味"        → 四层质检，改出终稿
+⑤ "配图"            → 生成正文插图（可选）
+⑥ "设计封面"        → 自动匹配模板出封面
+⑦ "排版"            → Markdown 转公众号 HTML
+⑧ "启动预测"        → 7 维盲打分（锁死不可改）
+⑨ 发布文章到公众号
+⑩ "已发布，链接是..." → 登记 URL
+⑪ 3 天后"复盘"       → 贴数据 → 验证预测 → 提炼观察
+⑫ 数据积累后"升级 rubric" → 全量重打分（可选）
+```
+
+### 日常查看
+```
+"状态" / "看板" → 查看全盘进度、待办、维护提醒
+"推荐选题"     → 获取下一篇文章推荐
+"我的读者是谁" → 查看读者画像
+```
+
+
+## 安装
+
+### 方式一：Claude Code 插件市场
+```bash
+claude plugin install github.com/Patrick-mufeng/grindraft-skill
+```
+
+### 方式二：手动复制
+将需要的 skill 文件夹复制到你的项目目录：
+```bash
+cp -r skills/grindraft-* <your-project>/.claude/skills/
+```
+
+安装后在 Claude Code 中说 **"磨稿初始化"** 即可开始。
+
+---
+
+## 看板（Kanban Dashboard）
+
+### 看板是什么
+每次说"状态"时，系统会：
+1. 读取当前所有文章的状态数据
+2. 生成一个 HTML 看板页面
+3. 用浏览器双击就能查看
+
+### 看板里有啥
+- **基本状态**：模式（cold-start / calibration）、rubric 版本、置信度
+- **选题池**：tier1/2/3 各有多少候选
+- **草稿流水线**：每篇文章当前在哪个阶段（待改/配图中/已排版/已预测...）
+- **预测池**：已预测未发布、待复盘、已复盘的数量
+- **待复盘表格**：哪些文章可以复盘了、还差几天
+- **校准状况**：连续同向偏差次数、是否建议升级 rubric
+- **基准指标**：平均阅读量/分享率/收藏率/留言率
+- **维护提醒**：style_guide 过期、选题过时、热点池过期
+
+### 数据准确性能保证吗？
+**能。三层保障：**
+
+1. **自动刷新**：每次修改状态的操作（写稿/预测/发布/复盘/升级/抓热点）完成后，自动刷新 STATUS.md
+2. **硬校验**：每次新会话读 STATUS.md 时，用系统日期与 QUICK_STATUS 锚点中的日期做机械比较，过期则提醒刷新
+3. **系统日期**：所有时间计算都从系统命令获取当天日期，禁止使用模型记忆
+
+
+## 三条不可妥协原则
+
+1. **盲预测**：预测必须在看到任何实际数据之前写完，写完即锁定，不可修改
+2. **升级 = 全量重打**：rubric 升级时所有历史文章用新公式重打分，新排序与实际表现 ≥4/5 一致才通过
+3. **Rubric 是工作台，不是博物馆**：被数据推翻的观察删掉，git history 才是档案
 
 ---
 
 ## 依赖
 
-- **Node.js + puppeteer + canvas**（可选）：封面 PNG 导出需要。HTML 预览和排版均无需依赖。
-- **aihot API**：热点抓取数据源，公开免费，无需 token。
+- **Node.js 18+**（可选）：grindraft-cover 的 PNG 导出需要（puppeteer + canvas），HTML 预览无需依赖
+- **Python 3.9+**（可选）：grindraft-illustrate 的 API 生图脚本需要（requests）
+- **aihot API**：公开免费，grindraft-trends 使用，无需 token
+
+---
+
+## 项目结构
+
+```
+grindraft-skill/
+├── skills/                          # 18 个子 skill
+│   ├── grindraft/SKILL.md           # 总协议 + 路由器
+│   ├── grindraft-init/SKILL.md      # 入口：初始化
+│   ├── grindraft-trends/SKILL.md    # 热点抓取
+│   ├── grindraft-seed/SKILL.md      # 选题对话
+│   ├── grindraft-write/SKILL.md     # AI 写初稿
+│   ├── grindraft-humanize/SKILL.md  # 去 AI 味
+│   ├── grindraft-illustrate/SKILL.md# 正文配图
+│   ├── grindraft-cover/SKILL.md     # 封面设计
+│   ├── grindraft-polish/SKILL.md    # 打磨标题
+│   ├── grindraft-format/SKILL.md    # 排版
+│   ├── grindraft-predict/SKILL.md   # 盲预测
+│   ├── grindraft-publish/SKILL.md   # 发布登记
+│   ├── grindraft-retro/SKILL.md     # 复盘
+│   ├── grindraft-persona/SKILL.md   # 受众画像
+│   ├── grindraft-bump/SKILL.md      # 升级 rubric
+│   ├── grindraft-recommend/SKILL.md # 推荐选题
+│   ├── grindraft-status/SKILL.md    # 状态看板
+│   └── grindraft-score-blind/SKILL.md # 盲打分 sub-agent
+├── shared-references/               # 9 份跨 skill 协议
+├── templates/                       # 写入用户项目的模板
+├── cover-templates/                 # 40 套封面设计模板
+├── starter-rubrics/                 # 评分体系初始权重
+├── adapters/                        # 外部数据源适配
+├── docs/                            # 文档
+├── package.json                     # Node.js 依赖
+├── CLAUDE.md                        # 项目级引导
+└── README.md                        # 本文件
+```
 
 ---
 
 ## 许可
 
 MIT
+
