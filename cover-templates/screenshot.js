@@ -1,6 +1,7 @@
-// cover-designer-skill/screenshot.js
-// ÓÃ·¨: node screenshot.js {¹¤×÷Ä¿Â¼Â·¾¶} {ÎÄ¼þ¼ÐÃû}
-// Ê¾Àý: node screenshot.js "C:/my-blog" "AIÅÅ°æ10·ÖÖÓ¸ã¶¨"
+ï»¿// cover-templates/screenshot.js
+// ç”¨æ³•: node screenshot.js <é¡¹ç›®æ ¹ç›®å½•> <æ–‡ç« æ–‡ä»¶å¤¹å>
+// ç¤ºä¾‹: node screenshot.js "C:/my-blog" "DeepSeekä»·æ ¼æˆ˜_2026-05-27"
+// åŠŸèƒ½: æˆªå–å°é¢é¢„è§ˆ HTML ä¸­çš„ 2.35:1 å’Œ 1:1 ä¸¤å¼ å°é¢ï¼Œåˆå¹¶ä¸ºä¸€å¼ æ‹¼æŽ¥å›¾
 
 const puppeteer = require('puppeteer');
 const { createCanvas, Image: CanvasImage } = require('canvas');
@@ -10,45 +11,50 @@ const fs = require('fs');
 (async () => {
   const workDir = process.argv[2];
   const folderName = process.argv[3];
-  
+
   if (!workDir || !folderName) {
-    console.error('ÓÃ·¨: node screenshot.js <¹¤×÷Ä¿Â¼> <ÎÄ¼þ¼ÐÃû>');
+    console.error('ç”¨æ³•: node screenshot.js <é¡¹ç›®æ ¹ç›®å½•> <æ–‡ç« æ–‡ä»¶å¤¹å>');
     process.exit(1);
   }
-  
+
   const outDir = path.resolve(workDir, 'articles', folderName);
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
-  
+
   const htmlPath = path.join(outDir, 'preview.html');
   if (!fs.existsSync(htmlPath)) {
     console.error('preview.html not found:', htmlPath);
     process.exit(1);
   }
-  
-  const browser = await puppeteer.launch({ headless: 'new' });
+
+  const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
-  
-  // 2.35:1 ¡ª ¿íÊÓ¿Ú
+
+  // 2.35:1 å°é¢æˆªå›¾
   await page.setViewport({ width: 1440, height: 800, deviceScaleFactor: 2 });
-  await page.goto('file:///' + htmlPath.replace(/\\/g,'/'), { waitUntil: 'networkidle0' });
-  const el2x35 = await page.$('#cover-2x35');
-  if (el2x35) {
-    await el2x35.screenshot({ path: path.join(outDir, 'cover-2x35.png') });
-    console.log('cover-2x35.png');
+  const url = 'file:///' + encodeURI(htmlPath.replace(/\\/g, '/'));
+  await page.goto(url, { waitUntil: 'networkidle0' });
+
+  const rects = await page.evaluate(() => {
+    const el235 = document.querySelector('.cover-2x35');
+    const el11 = document.querySelector('.cover-1x1');
+    if (!el235 || !el11) return null;
+    const r235 = el235.getBoundingClientRect();
+    const r11 = el11.getBoundingClientRect();
+    return {
+      r235: { x: r235.x, y: r235.y, w: r235.width, h: r235.height },
+      r11:  { x: r11.x,  y: r11.y,  w: r11.width,  h: r11.height }
+    };
+  });
+  if (!rects) {
+    console.error('.cover-2x35 or .cover-1x1 not found');
+    process.exit(1);
   }
-  
-  // 1:1 ¡ª ·½ÊÓ¿Ú
-  await page.setViewport({ width: 800, height: 800, deviceScaleFactor: 2 });
-  await page.goto('file:///' + htmlPath.replace(/\\/g,'/'), { waitUntil: 'networkidle0' });
-  const el1x1 = await page.$('#cover-1x1');
-  if (el1x1) {
-    await el1x1.screenshot({ path: path.join(outDir, 'cover-1x1.png') });
-    console.log('cover-1x1.png');
-  }
-  
+
+  await page.screenshot({ path: path.join(outDir, 'cover-2x35.png'), clip: rects.r235 });
+  await page.screenshot({ path: path.join(outDir, 'cover-1x1.png'),  clip: rects.r11 });
   await browser.close();
-  
-  // Canvas Æ´½Ó ¡ª ÒÔ 1:1 ¸ß¶ÈÎª»ù×¼£¬2.35:1 µÈ±ÈËõ·Å£¬²¢ÅÅÎÞ±äÐÎ
+
+  // Canvas åˆå¹¶ â€” ä»¥ 1:1 é«˜åº¦ä¸ºåŸºå‡†ï¼Œ2.35:1 ç­‰æ¯”ä¾‹ç¼©æ”¾
   function loadImg(filePath) {
     return new Promise((resolve, reject) => {
       const img = new CanvasImage();
@@ -57,23 +63,23 @@ const fs = require('fs');
       img.src = fs.readFileSync(filePath);
     });
   }
-  
+
   const img1 = await loadImg(path.join(outDir, 'cover-2x35.png'));
   const img2 = await loadImg(path.join(outDir, 'cover-1x1.png'));
-  
+
   const targetH = img2.naturalHeight;
   const scale = targetH / img1.naturalHeight;
   const w1 = Math.round(img1.naturalWidth * scale);
   const w2 = img2.naturalWidth;
-  
+
   const canvas = createCanvas(w1 + w2, targetH);
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#0a0a0a';
   ctx.fillRect(0, 0, w1 + w2, targetH);
   ctx.drawImage(img1, 0, 0, w1, targetH);
   ctx.drawImage(img2, w1, 0, w2, targetH);
-  
+
   fs.writeFileSync(path.join(outDir, 'cover-combined.png'), canvas.toBuffer('image/png'));
-  console.log('cover-combined.png (' + (w1+w2) + 'x' + targetH + ', both same height)');
-  console.log('Output ¡ú ' + outDir);
+  console.log('cover-combined.png (' + (w1 + w2) + 'x' + targetH + ', both same height)');
+  console.log('Output: ' + outDir);
 })();

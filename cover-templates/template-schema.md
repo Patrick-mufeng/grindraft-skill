@@ -1,4 +1,4 @@
-# Template Schema · 模板字段规范
+﻿# Template Schema · 模板字段规范
 
 每个模板文件必须包含以下全部字段。字段缺失视为模板未完成。
 
@@ -102,24 +102,7 @@ css_snippets:
     /* 该风格特效（发光/模糊/渐变等） */
   patterns: |
     /* 该风格图案（网格/纹理/装饰） */
-  capture_fallbacks: |
-    /* ⚠️ 必填：html2canvas 不支持的 CSS 效果 → 捕获时替换方案
-       格式：每行一个 CSS 选择器 + 要替换的 cssText
-       详见 templates/download-fix-guide.md */
-    .h-title { color: #7b5ea7; background: none; -webkit-text-fill-color: #7b5ea7; filter: none; }
-    .h-orb1 { filter: none; opacity: 0.06; }
-```
-### 捕获安全规范
-
-生成封面 HTML 时，所有使用以下 CSS 特性的元素**必须**添加 `data-capture-fallback` 属性：
-- `background-clip: text` → 改为纯色 `color`
-- `filter: blur()` → 改为 `filter:none; opacity降低`
-- `filter: drop-shadow()` → 改为 `text-shadow`
-- `backdrop-filter` → 改为 `background:半透明纯色`
-
-参考：`templates/download-fix-guide.md`
-
----
+  effects: |\n    /* 该风格特效（发光/模糊/渐变等） */\n  patterns: |\n    /* 该风格图案（网格/纹理/装饰） */\n---
 
 ## 模板文件命名
 
@@ -145,3 +128,4 @@ css_snippets:
 - [ ] variants ≥ 2 个
 - [ ] css_snippets 至少含 effects 和 patterns
 - [ ] 文件名符合命名规范
+

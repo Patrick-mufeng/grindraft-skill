@@ -138,32 +138,33 @@ articles/{标题}_{日期}/
 - 所有 CSS 内联，无外部依赖
 - 禁止 vw 单位（Grid 列宽已限定）
 - ⚠️ **两个 .cover-card 必须是 .preview-grid 的直接子元素**——如果嵌套（前一个 cover-card 未闭合），grid 退化为单列堆叠，1:1 跑到 2.35:1 下方
-- ⚠️ **截图回退**：使用 `filter: blur()`、`background-clip: text`、`backdrop-filter` 的元素必须加 `data-capture-fallback` 属性 + CSS `@media print` 回退规则，否则 Puppeteer 截图会丢失这些效果（详见 `cover-templates/design-principles.md` 的"捕获安全规范"）
 - ⚠️ **底部品牌栏（强制）**：`.preview-grid` 之后必须有一个 `<footer class="brand-footer">磨稿 • grindraft - Design</footer>`，样式内联在 `<style>` 中：居中、字号 12px、letter-spacing 1px、颜色与页面主色协调、上边距与 grid 有 `gap` 相同的间距——与封面卡片视觉隔离，不进入截图区域
 
 ### 4.3 可选 PNG 渲染（需 Node.js）
 
-先跑依赖检查（见"前置依赖"），通过后分两步。
+先跑依赖检查（见"前置依赖"），通过后生成一个截图脚本并执行。
 
-> **{标题}_{日期}** 为文章文件夹名，格式如 `DeepSeek价格战_2026-05-27`。
+> **{标题}_{日期}** 为文章文件夹名，格式如 DeepSeek价格战_2026-05-27。
 
-**Step 1 — 截图单张**：生成 `screenshot.js` 并执行。
+**生成 screenshot.js**——截图两张封面 + 合并为拼接图，一个脚本完成：
 
 ```javascript
-// screenshot.js — clip 两个 cover 并保存
+// screenshot.js — Puppeteer 截图 + Canvas 合并，一步完成
 const puppeteer = require('puppeteer');
+const { createCanvas, loadImage } = require('canvas');
 const path = require('path');
+const fs = require('fs');
+const outDir = path.resolve('articles/{标题}_{日期}/cover');
 
 (async () => {
   const browser = await puppeteer.launch({ headless: true });
   const page = await browser.newPage();
-  const htmlPath = 'file:///' + path.resolve('articles/{标题}_{日期}/cover/preview.html').replace(/\\/g, '/');
-  const outDir = path.resolve('articles/{标题}_{日期}/cover');
+  const htmlPath = "file:///" + encodeURI(path.resolve('articles/{标题}_{日期}/cover/preview.html').replace(/\\/g, '/'));
 
   await page.setViewport({ width: 1600, height: 900 });
   await page.goto(htmlPath, { waitUntil: 'networkidle0' });
 
-  // ⚠️ 先取 rect（同一个 viewport），不要中途改 viewport
+  // 同一个 viewport 取两个封面的 rect
   const rects = await page.evaluate(() => {
     const el235 = document.querySelector('.cover-2x35');
     const el11 = document.querySelector('.cover-1x1');
@@ -177,47 +178,30 @@ const path = require('path');
   await page.screenshot({ path: path.join(outDir, 'cover-2x35.png'), clip: rects.r235 });
   await page.screenshot({ path: path.join(outDir, 'cover-1x1.png'),  clip: rects.r11 });
   await browser.close();
-  console.log('screenshots done');
-})();
-```
 
-**Step 2 — 拼接合并**：生成 `merge.js` 并执行。⚠️ 合并的是两张单图文件本身，不是网页截图。
-
-```javascript
-// merge.js — 以 1:1 高度为基准，左右拼接
-const { createCanvas, loadImage } = require('canvas');
-const fs = require('fs');
-const path = require('path');
-const outDir = path.resolve('articles/{标题}_{日期}/cover');
-
-(async () => {
+  // 以 1:1 高度为基准，2.35:1 等比例缩放后左右拼接
   const img235 = await loadImage(path.join(outDir, 'cover-2x35.png'));
   const img11  = await loadImage(path.join(outDir, 'cover-1x1.png'));
-
-  const h = img11.height;                                    // 以 1:1 高度为基准
-  const w235 = Math.round(img235.width * (h / img235.height)); // 2.35:1 等比例缩放
-
+  const h = img11.height;
+  const w235 = Math.round(img235.width * (h / img235.height));
   const canvas = createCanvas(w235 + img11.width, h);
   const ctx = canvas.getContext('2d');
-  ctx.drawImage(img235, 0, 0, w235, h);       // 左
-  ctx.drawImage(img11, w235, 0, img11.width, h); // 右
-
+  ctx.drawImage(img235, 0, 0, w235, h);
+  ctx.drawImage(img11, w235, 0, img11.width, h);
   fs.writeFileSync(path.join(outDir, 'cover-combined.png'), canvas.toBuffer('image/png'));
-  console.log('merged:', w235 + img11.width, 'x', h);
+  console.log('done: cover-2x35.png + cover-1x1.png → cover-combined.png');
 })();
 ```
 
 执行：
 
-```bash
-node articles/{标题}_{日期}/cover/screenshot.js   # Step 1
-node articles/{标题}_{日期}/cover/merge.js         # Step 2
-```
+`ash
+node "articles/{标题}_{日期}/cover/screenshot.js"
+`
 
-执行完后删除两个临时脚本。
+执行完后删除脚本。
 
 无 Node.js → 跳过，提示"已生成预览 HTML，你可以手动截图。安装 Node.js + puppeteer + canvas 后可自动生成 PNG。"
-
 ---
 
 ## Phase 5 · 改稿循环
@@ -245,3 +229,6 @@ node articles/{标题}_{日期}/cover/merge.js         # Step 2
 - 上游：grindraft-humanize（用户改完稿子后）
 - 下游：grindraft-format（排版）
 - 主路由已注册触发词
+
+
+
