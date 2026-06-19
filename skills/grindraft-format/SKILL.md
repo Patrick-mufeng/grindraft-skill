@@ -113,6 +113,7 @@ B) 直接排版 → 跳过
 生成方式：
 1. 读取 `adapters/format/preview.html`（skill 内置预览模板，无外部依赖）
 2. 将排版生成的 HTML 原文嵌入 `<script type="text/plain" id="preload-content">` 标签内（替换 `<!-- CONTENT_PLACEHOLDER -->`）
+   ⚠️ 嵌入前必须对 HTML 原文做转义处理：将 `</script` 替换为 `<\/script`（大小写不敏感），防止内容中包含 `</script>` 时破坏 script 标签解析
 3. 写入 `articles/{标题}_{日期}/output-preview.html`
 
 ### Phase 3: 完成

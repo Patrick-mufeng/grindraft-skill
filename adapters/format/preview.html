@@ -393,17 +393,6 @@ let currentWidth = parseInt(localStorage.getItem(WIDTH_KEY) || '390');
 function applyWidth(w) {
   currentWidth = w;
   localStorage.setItem(WIDTH_KEY, w);
-  // Find the outermost <section> in content and update its max-width
-  var outer = contentEl.querySelector('section');
-  if (outer) {
-    var s = outer.getAttribute('style') || '';
-    s = s.replace(/max-width:\s*\d+px/,'max-width:'+w+'px');
-    if (!/max-width:\s*\d+px/.test(s)) {
-      s = s.replace(/width:\s*100%/, 'width:100%;max-width:'+w+'px');
-    }
-    outer.setAttribute('style', s);
-  }
-  // Update the copy width too
   renderContent();
 }
 
@@ -599,7 +588,7 @@ function updateScrollFade(){
 function renderContent(){
   var h = htmlSource.value.trim();
   if (h) {
-    h = h.replace(/(max-width:\s*)\d+(px)/, '$1'+currentWidth+'$2');
+    h = h.replace(/(max-width:\s*)\d+(px)/g, '$1'+currentWidth+'$2');
     if (!/max-width/.test(h)) {
       h = h.replace(/^(<section\s[^>]*style=")/, '$1max-width:'+currentWidth+'px;');
     }
@@ -774,7 +763,7 @@ setInterval(updateTime, 30000); updateTime();
   var pre = document.getElementById('preload-content');
   if(pre && pre.textContent.trim() && pre.textContent.indexOf('CONTENT_PLACEHOLDER') === -1){
     var ta = document.getElementById('htmlSource');
-    if(ta){ ta.value = pre.textContent.trim(); }
+    if(ta){ ta.value = pre.textContent.trim().replace(/<\\\/script/gi, '</script'); }
     if(typeof renderContent === 'function'){ renderContent(); }
     pre.remove();
   }
