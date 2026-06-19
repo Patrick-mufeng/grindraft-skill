@@ -67,7 +67,7 @@
 | "找选题" / "聊选题" | `grindraft-seed` | 深度对话收敛到一个具体写作角度 | 已 init |
 | "写文章" / "帮我写一篇" | `grindraft-write` | AI 出初稿（3 种参与度 low/medium/high） | 有选题 |
 | "去 AI 味" / "修一下" | `grindraft-humanize` | 四层去 AI 味（L1 硬规则→L2 逻辑→L3 节奏→L4 活人感） | 有初稿 |
-| "配图" / "生成配图" | `grindraft-illustrate` | 小黑风格正文插图，API 生图 + shot-list | final.md 存在 |
+| "配图" / "生成配图" | `grindraft-illustrate` | 小霓赛博风格正文插图，API 生图 + shot-list | final.md 存在 |
 | "设计封面" / "封面" | `grindraft-cover` | 读文章自动匹配 40 套模板，生成预览 HTML + PNG | 已改完稿 |
 | "打磨标题" / "起标题" | `grindraft-polish` | 生成标题候选 + 简介 + 封面提示词 | 已改完稿 |
 | "排版" / "转 HTML" | `grindraft-format` | AI 设计主题色板，Markdown → 公众号兼容 HTML | 有终稿 |

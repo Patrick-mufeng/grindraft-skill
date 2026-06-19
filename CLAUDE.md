@@ -1,4 +1,4 @@
-# CLAUDE.md
+﻿# CLAUDE.md
 
 Grindraft (磨稿) — Claude Code plugin for WeChat long-form article writing with a calibrated prediction loop. Version: **1.0.0**.
 
@@ -13,7 +13,7 @@ Grindraft (磨稿) — Claude Code plugin for WeChat long-form article writing w
 | Ideation | `grindraft-seed` | Topic exploration through dialogue |
 | Writing | `grindraft-write` | AI draft generation (3 autonomy levels) |
 | Polish | `grindraft-humanize` | 4-layer AI-tells removal |
-| Polish | `grindraft-illustrate` | Inline illustration generation (Xiaohei style) |
+| Polish | `grindraft-illustrate` | Inline illustration generation (Xiaoni (cyber-girl) style) |
 | Polish | `grindraft-cover` | Cover design from 40 templates |
 | Polish | `grindraft-polish` | Title candidates + cover prompts |
 | Format | `grindraft-format` | Markdown → WeChat-compatible HTML |

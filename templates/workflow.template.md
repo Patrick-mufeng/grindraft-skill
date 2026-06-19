@@ -1,4 +1,4 @@
-# 磨稿工作流 / Grindraft Workflow
+﻿# 磨稿工作流 / Grindraft Workflow
 
 > 11 阶段闭环：找热点 → 聊选题 → 写初稿 → 去 AI 味（可选）→ 配图 → 设计封面 → 排版 → 盲预测 → 发布 → 复盘 → 进化。
 
@@ -48,7 +48,7 @@
 
 **触发**："配图" / "生成配图"
 
-运行 `grindraft-illustrate`。读文章 → 出 shot list → 用户确认 → 逐张生成小黑怪诞手绘风格 16:9 插图。
+运行 `grindraft-illustrate`。读文章 → 出 shot list → 用户确认 → 逐张生成小霓赛博手绘风格 16:9 插图。
 
 **输出**：`articles/{标题}_{日期}/illustrations/{序号}-{主题}.png`
 

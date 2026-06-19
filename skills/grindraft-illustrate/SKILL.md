@@ -1,7 +1,7 @@
 ﻿---
 name: grindraft-illustrate
 description: |
-  正文配图生成。读文章自动分析出配图策略（shot list），用小黑怪诞手绘风格逐张生成 16:9 横版插图。
+  正文配图生成。读文章自动分析出配图策略（shot list），用小霓怪诞手绘风格逐张生成 16:9 横版插图。
   触发词："配图"/"生成配图"/"文章插图"/"illustrate"/"做插图"。
 allowed-tools:
   - Bash
@@ -13,7 +13,7 @@ allowed-tools:
 
 # grindraft-illustrate — 正文配图生成
 
-在文章定稿后，为正文生成小黑风格的怪诞手绘配图。通过 image-2 服务调用生图 API 逐张生成 16:9 横版插图。
+在文章定稿后，为正文生成小霓风格的怪诞手绘配图。通过 image-2 服务调用生图 API 逐张生成 16:9 横版插图。
 
 ## 前置依赖
 
@@ -89,7 +89,7 @@ Phase 6: 交付汇总
 开始工作前，按需要读取以下参考文件，不要一次塞满上下文：
 
 - `references/style-dna.md`：风格 DNA、颜色、文字、禁忌。
-- `references/xiaohei-ip.md`：小黑 IP 的形象、性格、动作库和禁忌。
+- `references/xiaoni-ip.md`：小霓 IP 的形象、性格、动作库和禁忌。
 - `references/composition-patterns.md`：结构类型、原创隐喻方法和反复刻规则。
 - `references/prompt-template.md`：单张生图提示词模板。
 - `references/qa-checklist.md`：生成后检查和迭代规则。
@@ -175,7 +175,7 @@ fi
 | 主题 | 图的主题 |
 | 核心意思 | 这张图要表达什么 |
 | 结构类型 | Workflow / 系统局部 / 前后对比 / 角色状态 / 概念隐喻 / 方法分层 / 地图路线 / 小漫画分镜 |
-| 小黑动作 | 小黑在图里做什么 |
+| 小霓动作 | 小霓在图里做什么 |
 | 建议元素 | 1-4 个核心物件 |
 | 中文标注词 | 3-8 个短标注词 |
 
@@ -186,7 +186,7 @@ fi
 ```
 ## 配图策略
 
-| # | 位置 | 主题 | 结构类型 | 小黑动作 |
+| # | 位置 | 主题 | 结构类型 | 小霓动作 |
 |---|------|------|----------|----------|
 | 1 | 第X段后 | xxx | 概念隐喻 | xxx |
 | 2 | ... | ... | ... | ... |
@@ -194,7 +194,7 @@ fi
 ### 图 1：{主题}
 - **核心意思**：...
 - **结构类型**：概念隐喻
-- **小黑动作**：...
+- **小霓动作**：...
 - **建议元素**：纸箱 / 漏斗 / 箭头
 - **中文标注词**：输入 / 卡住了 / 输出 / ？
 ...
@@ -224,8 +224,8 @@ fi
 
 - 16:9 horizontal Chinese article illustration
 - Pure white background, black hand-drawn line art
-- 小黑 IP（solid-black creature, white dot eyes, thin legs, blank serious expression）
-- 小黑 must perform the core conceptual action
+- 小霓 IP（cyber-girl operator, geometric bob, white dot eyes, angular tech-vest）
+- 小霓 must perform the core conceptual action
 - Sparse red/orange/blue handwritten Chinese annotations
 - 大量留白（≥35%）
 - 禁止 PPT、商业插画、可爱卡通、复杂背景、左上角标题
@@ -301,7 +301,7 @@ python ... --fallback-url https://备选地址/
 **必过项**：
 - 16:9 横版
 - 干净白底
-- 有小黑且承担核心动作
+- 有小霓且承担核心动作
 - 没有复刻旧案例构图
 - 画面怪诞有创意
 - 中文标注少、短、能读
@@ -309,7 +309,7 @@ python ... --fallback-url https://备选地址/
 
 **失败信号** → 重生成：
 - 左上角有类型标题
-- 小黑像吉祥物/可爱卡通
+- 小霓像吉祥物/可爱卡通
 - 画面像 PPT/流程图/课件
 - 背景有纸纹/阴影/渐变
 - 元素太多太满
@@ -333,7 +333,7 @@ python ... --fallback-url https://备选地址/
 用 Write 工具在 final.md 的对应位置插入：
 
 ```markdown
-![插图占位：{shot主题}](https://bee-reg.ab.imagency.cn/e/33c0a7973f78f4c4997c6d937824b995.png)
+![插图占位：{shot主题}](https://bee-reg-ab.imagency.cn/e/33c0a7973f78f4c4997c6d937824b995.png)
 *↑ 用户可自行替换为 illustrations/ 目录下的实际配图*
 ```
 
@@ -426,7 +426,7 @@ articles/{标题}_{日期}/
 1. **只读 final.md 正文段**——不读 frontmatter
 2. **一张图一个核心结构**——不堆砌
 3. **每次重新发明隐喻**——不复刻旧案例，参考 `references/composition-patterns.md`
-4. **小黑必须是动作主体**——不只是装饰
+4. **小霓必须是动作主体**——不只是装饰
 5. **API 生图不可控时降低期望**——gpt-image-2 等 API 模型的风格还原度有限，接受合理偏差
 6. **先出策略再生成**——未经用户确认的 shot list 不要直接生图（除非用户说"直接生成"）
 7. **不直接嵌入生成图片到 final.md**——只插入占位 URL，实际图片由用户手动替换
@@ -436,3 +436,4 @@ articles/{标题}_{日期}/
 - 上游：grindraft-humanize（用户改完稿子后）
 - 下游：grindraft-cover（设计封面）
 - 主路由注册触发词："配图"/"生成配图"/"文章插图"/"illustrate"/"做插图"
+

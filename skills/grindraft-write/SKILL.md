@@ -1,4 +1,4 @@
----
+﻿---
 name: grindraft-write
 description: |
   AI 按磨稿方法论写公众号长文初稿。支持 autonomy low/medium/high 三种参与度。写稿前读 style_guide.md 了解用户偏好。触发词："写文章"/"帮我写一篇"/"write"/"出稿"/"写初稿"。
@@ -273,7 +273,7 @@ summary: [点击这里填写一句话简介]
 下一步：
 - 修改 title 和 summary
 - "去 AI 味" → 四层质检
-- "配图" → 生成小黑风格正文插图
+- "配图" → 生成小霓风格正文插图
 - "设计封面" → 40 套模板选一个生成预览
 - "排版" → 出 HTML（title/summary/标题候选/简介 不进入排版）
 - "启动预测" → 打分锁定

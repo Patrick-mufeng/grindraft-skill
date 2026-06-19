@@ -259,11 +259,11 @@ grindraft-skill/
 │   ├── grindraft-seed/SKILL.md        # 选题对话 + 可选 draft
 │   ├── grindraft-write/SKILL.md       # AI 写初稿（autonomy low/medium/high）
 │   ├── grindraft-humanize/SKILL.md    # 四层去 AI 味（L1-L4 通用版）
-│   ├── grindraft-illustrate/SKILL.md  # 正文配图（小黑风格，API 生图）
+│   ├── grindraft-illustrate/SKILL.md  # 正文配图（小霓赛博风格，API 生图）
 │   │   ├── references/
 │   │   │   ├── style-dna.md
 │   │   │   ├── prompt-template.md
-│   │   │   ├── xiaohei-ip.md
+│   │   │   ├── xiaoni-ip.md
 │   │   │   ├── qa-checklist.md
 │   │   │   └── composition-patterns.md
 │   │   └── scripts/
